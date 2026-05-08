@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>タスク管理アプリ</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>📋 タスク管理</h1>
+      <p class="subtitle">やることを整理しよう</p>
+    </header>
+
+    <section class="form-section">
+      <form id="task-form" class="task-form">
+        <div class="form-row">
+          <input
+            type="text"
+            id="task-title"
+            placeholder="タスクを入力..."
+            required
+            maxlength="100"
+          >
+          <button type="submit" class="btn-primary">追加</button>
+        </div>
+        <div class="form-row form-row-details">
+          <input type="date" id="task-due" title="期限日">
+          <select id="task-priority" title="優先度">
+            <option value="low">優先度：低</option>
+            <option value="medium" selected>優先度：中</option>
+            <option value="high">優先度：高</option>
+          </select>
+          <input
+            type="text"
+            id="task-category"
+            placeholder="カテゴリ (例: 仕事)"
+            maxlength="20"
+          >
+          <input
+            type="text"
+            id="task-tags"
+            placeholder="タグ (カンマ区切り)"
+            maxlength="60"
+          >
+        </div>
+      </form>
+    </section>
+
+    <section class="filters">
+      <div class="filter-group">
+        <button class="filter-btn active" data-filter="all">すべて</button>
+        <button class="filter-btn" data-filter="active">未完了</button>
+        <button class="filter-btn" data-filter="done">完了</button>
+      </div>
+      <div class="filter-group">
+        <select id="filter-category">
+          <option value="">全カテゴリ</option>
+        </select>
+        <select id="sort-by">
+          <option value="created">追加順</option>
+          <option value="due">期限順</option>
+          <option value="priority">優先度順</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="stats" id="stats"></section>
+
+    <ul class="task-list" id="task-list"></ul>
+
+    <p class="empty-state" id="empty-state" hidden>
+      タスクはまだありません。上のフォームから追加してください。
+    </p>
+
+    <footer class="footer">
+      <button id="clear-done" class="btn-text">完了済みをすべて削除</button>
+    </footer>
+  </div>
+
+  <template id="task-template">
+    <li class="task-item">
+      <label class="task-check">
+        <input type="checkbox" class="task-checkbox">
+        <span class="checkmark"></span>
+      </label>
+      <div class="task-body">
+        <div class="task-title-row">
+          <span class="task-title"></span>
+          <span class="task-priority-badge"></span>
+        </div>
+        <div class="task-meta">
+          <span class="task-due"></span>
+          <span class="task-category"></span>
+          <span class="task-tags"></span>
+        </div>
+      </div>
+      <div class="task-actions">
+        <button class="btn-icon edit-btn" title="編集">✏️</button>
+        <button class="btn-icon delete-btn" title="削除">🗑️</button>
+      </div>
+    </li>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
