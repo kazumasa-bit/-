@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+credentials.json
+service_account.json
+.env
