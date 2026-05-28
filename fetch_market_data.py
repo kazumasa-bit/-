@@ -29,6 +29,10 @@ from google.oauth2.service_account import Credentials
 JST = ZoneInfo("Asia/Tokyo")
 
 # --- 取得する指標の定義 -----------------------------------------------------
+# 手動で入力する列 (スクリプトは空欄で追記し、既存の入力値は上書きしません)
+# 楽天証券の総資産は自動取得できないため、ここに時々手入力してください。
+MANUAL_COLUMNS: list[str] = ["総資産(楽天証券)"]
+
 # (列名, Yahoo Finance シンボル)
 YFINANCE_METRICS: list[tuple[str, str]] = [
     ("日経平均", "^N225"),
@@ -126,6 +130,10 @@ def main() -> None:
 
     # 1. データ収集 -------------------------------------------------------
     row: dict[str, object] = {"日付": datetime.now(JST).strftime("%Y-%m-%d")}
+
+    # 手動入力列はヘッダーを確保するためだけに空欄で用意 (既存値は上書きしない)
+    for col in MANUAL_COLUMNS:
+        row[col] = None
 
     print("Yahoo Finance から取得中...")
     for label, symbol in YFINANCE_METRICS:
