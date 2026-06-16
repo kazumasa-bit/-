@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b5d8a">
+<title>小田原 釣りプランナー</title>
+<style>
+  :root{
+    --bg:#f3f7fa; --card:#ffffff; --ink:#13303f; --sub:#5a7180;
+    --line:#dce6ec; --accent:#0b5d8a; --accent2:#0a7d8f;
+    --warn:#b23b2e; --warnbg:#fdecea; --good:#1d7a3f;
+    --oshio:#d2493b; --chushio:#e08a2b; --koshio:#2f74c0; --nagashio:#6b8a8f;
+    --shadow:0 2px 10px rgba(20,60,80,.08);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.6; -webkit-text-size-adjust:100%;
+  }
+  header.app{
+    background:linear-gradient(180deg,#0b5d8a,#0a7d8f); color:#fff;
+    padding:0; position:relative; overflow:hidden;
+  }
+  .hero-svg{display:block; width:100%; height:auto}
+  .hero-text{
+    position:absolute; left:16px; bottom:12px; text-shadow:0 1px 4px rgba(0,0,0,.35);
+  }
+  .hero-text h1{margin:0; font-size:1.5rem; letter-spacing:.04em}
+  .hero-text p{margin:2px 0 0; font-size:.8rem; opacity:.92}
+  main{max-width:760px; margin:0 auto; padding:14px 14px 60px}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:14px; margin:14px 0;
+  }
+  h2.sec{font-size:1.05rem; margin:0 0 10px; display:flex; align-items:center; gap:8px}
+  h2.sec .ic{flex:0 0 auto}
+  label.fld{display:block; font-size:.8rem; color:var(--sub); margin:0 0 4px}
+  input[type=date], select{
+    width:100%; padding:10px 12px; font-size:1rem; border:1px solid var(--line);
+    border-radius:10px; background:#fbfdfe; color:var(--ink);
+  }
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .row > div{flex:1 1 160px}
+  /* 潮 */
+  .shio-box{display:flex; align-items:center; gap:14px; margin-top:12px}
+  .shio-badge{
+    flex:0 0 auto; width:84px; height:84px; border-radius:50%; display:flex;
+    flex-direction:column; align-items:center; justify-content:center; color:#fff; font-weight:700;
+  }
+  .shio-badge .nm{font-size:1.25rem; line-height:1.1}
+  .shio-badge .sub{font-size:.62rem; font-weight:500; opacity:.9}
+  .shio-oshio{background:var(--oshio)} .shio-chushio{background:var(--chushio)}
+  .shio-koshio{background:var(--koshio)} .shio-nagashio{background:var(--nagashio)}
+  .shio-meta{font-size:.86rem; color:var(--sub)}
+  .shio-meta b{color:var(--ink)}
+  .note{
+    font-size:.78rem; color:var(--sub); background:#f0f5f8; border-radius:8px;
+    padding:8px 10px; margin-top:10px; border-left:3px solid var(--accent2);
+  }
+  /* 禁止注記 */
+  .forbid{
+    font-size:.82rem; color:var(--warn); background:var(--warnbg); border:1px solid #f3c9c3;
+    border-radius:10px; padding:9px 11px; margin-top:10px;
+  }
+  .forbid b{display:block; margin-bottom:2px}
+  /* タグ */
+  .tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+  .tag{
+    font-size:.74rem; padding:3px 9px; border-radius:999px; background:#e7f0f5;
+    color:var(--accent); border:1px solid #cfe1ea; cursor:pointer; text-decoration:none;
+  }
+  .tag.fam{background:#e9f7ee; color:var(--good); border-color:#c4e6d0}
+  .spot-head{display:flex; align-items:center; gap:12px}
+  .spot-head .svg{flex:0 0 auto}
+  .spot-head h3{margin:0; font-size:1.05rem}
+  .spot-head .loc{font-size:.76rem; color:var(--sub)}
+  .links{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+  .btn{
+    display:inline-flex; align-items:center; gap:6px; font-size:.8rem; text-decoration:none;
+    padding:7px 12px; border-radius:10px; border:1px solid var(--line); color:var(--accent); background:#fbfdfe;
+  }
+  .btn.yt{color:#c4302b; border-color:#f0cfce; background:#fdf3f2}
+  /* 魚カレンダー */
+  .fish-row{display:grid; grid-template-columns:120px 1fr; gap:8px; align-items:center; padding:7px 0; border-top:1px solid var(--line)}
+  .fish-row:first-of-type{border-top:none}
+  .fish-name{display:flex; align-items:center; gap:8px; font-weight:600; font-size:.92rem}
+  .fish-name small{font-weight:400; color:var(--sub); font-size:.72rem}
+  .months{display:grid; grid-template-columns:repeat(12,1fr); gap:2px}
+  .m{height:22px; border-radius:4px; background:#eef3f6; position:relative}
+  .m[data-v="1"]{background:#cfe6d6} .m[data-v="2"]{background:#7fc89a} .m[data-v="3"]{background:#2f9e5b}
+  .m.now{outline:2px solid var(--accent); outline-offset:-2px}
+  .month-head{display:grid; grid-template-columns:120px 1fr; gap:8px; margin-bottom:4px}
+  .month-head .mh{display:grid; grid-template-columns:repeat(12,1fr); gap:2px; font-size:.6rem; color:var(--sub); text-align:center}
+  .legend{display:flex; gap:12px; font-size:.72rem; color:var(--sub); margin-top:10px; flex-wrap:wrap}
+  .legend span{display:inline-flex; align-items:center; gap:4px}
+  .sw{width:14px; height:14px; border-radius:3px; display:inline-block}
+  /* 仕掛け */
+  .rig{padding:10px 0; border-top:1px solid var(--line)}
+  .rig:first-child{border-top:none}
+  .rig h4{margin:0 0 2px; font-size:.95rem; display:flex; align-items:center; gap:8px}
+  .rig p{margin:2px 0 0; font-size:.82rem; color:var(--sub)}
+  /* トグル */
+  .toggle{display:flex; align-items:center; gap:8px; font-size:.85rem; cursor:pointer; user-select:none}
+  .toggle input{display:none}
+  .sw-track{width:42px; height:24px; border-radius:999px; background:#cdd9e0; position:relative; transition:.2s; flex:0 0 auto}
+  .sw-track::after{content:""; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .toggle input:checked + .sw-track{background:var(--good)}
+  .toggle input:checked + .sw-track::after{left:20px}
+  .hidden{display:none !important}
+  footer{font-size:.72rem; color:var(--sub); text-align:center; padding:18px 14px 30px}
+  footer a{color:var(--accent)}
+  .pill{display:inline-block; font-size:.66rem; background:#eef3f6; color:var(--sub); border-radius:6px; padding:1px 6px; margin-left:6px; vertical-align:middle}
+</style>
+</head>
+<body>
+<header class="app">
+  <!-- 自作SVGヒーロー：海・波・富士・小田原城（外部写真は使わない方針） -->
+  <svg class="hero-svg" viewBox="0 0 760 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="小田原の海と城のイラスト">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#9fd3e6"/><stop offset="1" stop-color="#cfeaf2"/>
+      </linearGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1a87a8"/><stop offset="1" stop-color="#0b5d8a"/>
+      </linearGradient>
+    </defs>
+    <rect width="760" height="200" fill="url(#sky)"/>
+    <!-- 富士山 -->
+    <path d="M70 120 L150 40 L230 120 Z" fill="#7d93b0" opacity=".7"/>
+    <path d="M128 70 L150 40 L172 70 L160 76 L150 66 L140 76 Z" fill="#f4f8fb" opacity=".9"/>
+    <!-- 小田原城（簡易シルエット） -->
+    <g fill="#36506a" opacity=".85">
+      <rect x="520" y="92" width="70" height="34"/>
+      <rect x="512" y="78" width="86" height="16" rx="3"/>
+      <rect x="528" y="60" width="54" height="22"/>
+      <path d="M520 60 L555 44 L590 60 Z"/>
+      <rect x="551" y="36" width="8" height="12"/>
+    </g>
+    <!-- 海 -->
+    <rect y="126" width="760" height="74" fill="url(#sea)"/>
+    <path d="M0 130 Q40 122 80 130 T160 130 T240 130 T320 130 T400 130 T480 130 T560 130 T640 130 T720 130 T800 130 V200 H0 Z" fill="#1a87a8" opacity=".5"/>
+    <path d="M0 142 Q40 134 80 142 T160 142 T240 142 T320 142 T400 142 T480 142 T560 142 T640 142 T720 142 T800 142 V200 H0 Z" fill="#0b5d8a" opacity=".5"/>
+  </svg>
+  <div class="hero-text">
+    <h1>小田原 釣りプランナー</h1>
+    <p>相模湾・西湘エリアの釣り場と旬を、ざっくり計画。</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- 日付＆潮 -->
+  <section class="card">
+    <h2 class="sec"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#0b5d8a" stroke-width="2"/><path d="M12 7v5l3 2" stroke="#0b5d8a" stroke-width="2" stroke-linecap="round"/></svg>釣行日と潮まわり</h2>
+    <div class="row">
+      <div>
+        <label class="fld" for="date">日付を選ぶ</label>
+        <input type="date" id="date">
+      </div>
+    </div>
+    <div class="shio-box">
+      <div id="shioBadge" class="shio-badge shio-chushio"><span class="nm">—</span><span class="sub">しお</span></div>
+      <div class="shio-meta">
+        <div>この日の潮は <b id="shioName">—</b> ごろの見込みです。</div>
+        <div id="shioAge" style="margin-top:2px"></div>
+      </div>
+    </div>
+    <div class="note">
+      ⚠ <b>潮名はあくまで目安</b>です（月齢からの推定で、地域や年でズレます）。
+      満潮・干潮の<b>正確な時刻はこのアプリでは出していません</b>。釣行前に必ず外部の潮見表で確認してください。
+    </div>
+    <div class="links">
+      <a class="btn" id="tideLink" href="#" target="_blank" rel="noopener">🌊 潮見表を調べる（外部）</a>
+    </div>
+  </section>
+
+  <!-- ファミリートグル -->
+  <section class="card">
+    <label class="toggle">
+      <input type="checkbox" id="familyToggle">
+      <span class="sw-track"></span>
+      <span>👨‍👩‍👧 ファミリーモード（家族・初心者向けを優先表示）</span>
+    </label>
+    <div class="note" id="familyNote" style="display:none">
+      お子さま連れ向けに、足場がよく手軽な釣り場・仕掛けを上に表示しています。
+      ライフジャケットの着用、こまめな休憩・水分補給、立入禁止表示の厳守をお願いします。
+    </div>
+  </section>
+
+  <!-- 釣り場 -->
+  <section class="card">
+    <h2 class="sec"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7Z" stroke="#0b5d8a" stroke-width="2"/><circle cx="12" cy="9" r="2.4" fill="#0b5d8a"/></svg>釣り場（小田原周辺）</h2>
+    <div id="spots"></div>
+  </section>
+
+  <!-- 魚の旬カレンダー -->
+  <section class="card">
+    <h2 class="sec"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12c3-5 9-5 12 0-3 5-9 5-12 0Z" stroke="#0b5d8a" stroke-width="2"/><path d="M15 12c2-3 5-3 6 0-1 3-4 3-6 0Z" stroke="#0b5d8a" stroke-width="2"/></svg>魚の旬カレンダー <span class="pill">旬度は推定</span></h2>
+    <div class="month-head"><div></div><div class="mh" id="monthHead"></div></div>
+    <div id="fish"></div>
+    <div class="legend">
+      <span><i class="sw" style="background:#2f9e5b"></i>よく狙える</span>
+      <span><i class="sw" style="background:#7fc89a"></i>狙える</span>
+      <span><i class="sw" style="background:#cfe6d6"></i>ぼちぼち</span>
+      <span><i class="sw" style="background:#eef3f6"></i>オフ</span>
+      <span><i class="sw" style="outline:2px solid var(--accent); background:#fff"></i>選択中の月</span>
+    </div>
+    <div class="note">旬度はあくまで一般的な傾向からの<b>推定</b>です。海況・年により大きく前後します。</div>
+  </section>
+
+  <!-- 仕掛け -->
+  <section class="card">
+    <h2 class="sec"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3v8" stroke="#0b5d8a" stroke-width="2" stroke-linecap="round"/><path d="M12 11c0 4-4 4-4 7a4 4 0 0 0 8 0" stroke="#0b5d8a" stroke-width="2" stroke-linecap="round"/></svg>仕掛け（釣り方）</h2>
+    <div id="rigs"></div>
+  </section>
+
+</main>
+
+<footer>
+  小田原 釣りプランナー ／ 自作SVG・推定データで構成（外部写真なし）。<br>
+  潮・旬・釣果は目安です。最新の規制・潮見表・天気は必ず公式情報でご確認ください。
+</footer>
+
+<script>
+/* =========================================================================
+   小田原 釣りプランナー  ―  単一HTML / 外部依存なし
+   設計メモ（崩さない方針）:
+   ・外部写真は使わず自作SVGで表現する
+   ・潮名は「目安」。満干潮の正確な時刻は出さない（外部潮見表へ誘導）
+   ・各釣り場の「釣り禁止・立入禁止」注記は必ず残して表示する
+   ・魚の旬度（season）は推定値。0=オフ,1=ぼちぼち,2=狙える,3=よく狙える
+   ========================================================================= */
+
+/* ---- TIDES：潮名の定義（色・説明） ---- */
+const TIDES = {
+  "大潮": {cls:"shio-oshio",   desc:"干満差が大きい"},
+  "中潮": {cls:"shio-chushio", desc:"大潮と小潮の間"},
+  "小潮": {cls:"shio-koshio",  desc:"干満差が小さい"},
+  "長潮": {cls:"shio-nagashio",desc:"潮が動きにくい"},
+  "若潮": {cls:"shio-nagashio",desc:"潮が動き始める"}
+};
+
+/* ---- calcShio：日付 → 潮名（目安）。月齢から旧暦日を概算して対応づける ---- */
+function calcShio(date){
+  const synodic = 29.530588853;                       // 朔望月
+  const refNewMoon = Date.UTC(2000,0,6,18,14,0)/86400000; // 基準の新月(日単位)
+  const days = date.getTime()/86400000;
+  let age = (days - refNewMoon) % synodic;
+  if(age < 0) age += synodic;                          // 月齢(0〜約29.5)
+  const lunarDay = Math.floor(age) + 1;               // 旧暦日 ≒ 月齢+1
+  const map = {
+    1:"大潮",2:"大潮",
+    3:"中潮",4:"中潮",5:"中潮",6:"中潮",
+    7:"小潮",8:"小潮",9:"小潮",
+    10:"長潮",11:"若潮",
+    12:"中潮",13:"中潮",
+    14:"大潮",15:"大潮",16:"大潮",17:"大潮",18:"大潮",
+    19:"中潮",20:"中潮",21:"中潮",22:"中潮",
+    23:"小潮",24:"小潮",25:"小潮",
+    26:"長潮",27:"若潮",
+    28:"中潮",29:"中潮",30:"大潮"
+  };
+  const name = map[lunarDay] || "中潮";
+  return {name, age, lunarDay};
+}
+
+/* ---- 自作SVGアイコン（魚・イカ・釣り場） ---- */
+function fishSVG(color){
+  return `<svg width="30" height="20" viewBox="0 0 60 40" aria-hidden="true">
+    <path d="M5 20 C15 4 40 4 50 20 C40 36 15 36 5 20 Z" fill="${color}"/>
+    <path d="M48 20 L60 10 L60 30 Z" fill="${color}"/>
+    <circle cx="16" cy="17" r="2.4" fill="#fff"/><circle cx="16" cy="17" r="1.2" fill="#13303f"/>
+    <path d="M26 20 q8 -6 16 0 q-8 6 -16 0" fill="rgba(255,255,255,.35)"/>
+  </svg>`;
+}
+function squidSVG(color){
+  return `<svg width="30" height="20" viewBox="0 0 60 40" aria-hidden="true">
+    <path d="M30 2 C40 2 44 12 44 20 L48 34 L44 32 L42 36 L38 32 L34 38 L30 32 L26 38 L22 32 L18 36 L16 32 L12 34 L16 20 C16 12 20 2 30 2 Z" fill="${color}"/>
+    <circle cx="24" cy="16" r="2.2" fill="#fff"/><circle cx="36" cy="16" r="2.2" fill="#fff"/>
+    <circle cx="24" cy="16" r="1" fill="#13303f"/><circle cx="36" cy="16" r="1" fill="#13303f"/>
+  </svg>`;
+}
+function spotSVG(){
+  return `<svg width="46" height="46" viewBox="0 0 60 60" aria-hidden="true">
+    <rect width="60" height="60" rx="10" fill="#e7f0f5"/>
+    <rect x="6" y="36" width="48" height="6" rx="2" fill="#9aaeb8"/>
+    <rect x="40" y="20" width="6" height="22" fill="#7d93a0"/>
+    <path d="M0 44 q8 -5 15 0 t15 0 t15 0 t15 0 V60 H0 Z" fill="#1a87a8" opacity=".55"/>
+    <path d="M0 50 q8 -5 15 0 t15 0 t15 0 t15 0 V60 H0 Z" fill="#0b5d8a" opacity=".55"/>
+  </svg>`;
+}
+
+/* ---- SPOTS：釣り場。forbid（禁止/注意）は必ず保持して表示 ---- */
+const SPOTS = [
+  {
+    name:"小田原漁港（早川港）", loc:"早川 / アクセス◎・トイレ・売店あり",
+    family:true,
+    fish:["アジ","サバ","イワシ","カサゴ","メバル","クロダイ","アオリイカ"],
+    forbid:"漁港内には立入禁止・釣り禁止エリアがあります。荷さばき場・船の係留エリア・赤灯堤防など立入禁止の表示・ロープには必ず従ってください。"
+  },
+  {
+    name:"西湘サーフ（国府津〜酒匂）", loc:"砂浜 / 広大なサーフ",
+    family:false,
+    fish:["シロギス","ヒラメ","マゴチ","アオリイカ","イシモチ"],
+    forbid:"急深で離岸流・高波があります。ライフジャケット必須。消波ブロックへの立入は危険です。気象・波浪に注意。"
+  },
+  {
+    name:"酒匂川河口", loc:"河口 / シーバス・ハゼの好ポイント",
+    family:false,
+    fish:["シーバス","ハゼ","クロダイ","シロギス"],
+    forbid:"増水・濁り時は非常に危険です。漁業権・遊漁ルールを確認し、河川内の禁止区域では釣りをしないでください。"
+  },
+  {
+    name:"江之浦漁港", loc:"江之浦 / 小規模な漁港",
+    family:true,
+    fish:["メジナ","クロダイ","アオリイカ","カサゴ","アジ"],
+    forbid:"漁業関係者が最優先です。係留ロープ・船道周辺は釣り禁止。駐車マナーを守り、立入禁止表示に従ってください。"
+  },
+  {
+    name:"米神漁港", loc:"米神 / 静かな小漁港",
+    family:false,
+    fish:["アジ","カマス","アオリイカ","メジナ"],
+    forbid:"地元・漁業関係者優先。路上駐車は厳禁です。釣り禁止エリアの表示に必ず従ってください。"
+  },
+  {
+    name:"石橋港", loc:"石橋 / 漁港",
+    family:false,
+    fish:["アジ","サバ","アオリイカ","カサゴ","クロダイ"],
+    forbid:"一部立入禁止エリアあり。漁協のルールを遵守し、係留・作業エリアには入らないでください。"
+  }
+];
+
+/* ---- FISH：旬度は推定（season[0..11] = 1〜12月, 値0〜3） ---- */
+const FISH = [
+  {name:"アジ",        kind:"fish",  color:"#5fa8c9", season:[1,1,1,2,2,3,3,3,3,3,2,1], rig:"サビキ釣り"},
+  {name:"サバ",        kind:"fish",  color:"#3f6b8a", season:[0,0,1,1,2,3,3,3,2,2,1,0], rig:"サビキ釣り"},
+  {name:"イワシ",      kind:"fish",  color:"#7fb6cf", season:[0,0,1,2,2,3,3,3,2,2,1,0], rig:"サビキ釣り"},
+  {name:"シロギス",    kind:"fish",  color:"#e0c98a", season:[0,0,1,2,3,3,3,3,2,1,0,0], rig:"ちょい投げ"},
+  {name:"ヒラメ",      kind:"fish",  color:"#9a8a6a", season:[3,2,2,1,1,0,0,0,1,2,3,3], rig:"ルアー釣り"},
+  {name:"アオリイカ",  kind:"squid", color:"#caa05a", season:[1,1,2,3,3,2,0,0,1,3,3,2], rig:"エギング"},
+  {name:"カサゴ",      kind:"fish",  color:"#c2603f", season:[3,3,2,2,1,1,1,1,2,2,3,3], rig:"探り・穴釣り"},
+  {name:"メバル",      kind:"fish",  color:"#5f6f8a", season:[3,3,3,2,1,0,0,0,0,1,2,3], rig:"探り・穴釣り"},
+  {name:"クロダイ",    kind:"fish",  color:"#6a7d8a", season:[1,1,2,3,3,2,2,2,2,3,2,1], rig:"ウキフカセ釣り"},
+  {name:"メジナ",      kind:"fish",  color:"#4f7d6a", season:[3,3,2,1,1,0,0,0,1,2,3,3], rig:"ウキフカセ釣り"},
+  {name:"カマス",      kind:"fish",  color:"#8aa0b0", season:[0,0,0,0,1,1,2,2,3,3,2,1], rig:"ルアー釣り"},
+  {name:"シーバス",    kind:"fish",  color:"#7a8a9a", season:[1,1,2,2,2,2,2,2,2,3,2,1], rig:"ルアー釣り"}
+];
+
+/* ---- RIGS：仕掛け（釣り方） ---- */
+const RIGS = [
+  {name:"サビキ釣り",    family:true,  target:"アジ・サバ・イワシ", desc:"擬餌バリの仕掛けにコマセ。初心者・家族向けの定番。足場のよい漁港で。"},
+  {name:"ちょい投げ",    family:true,  target:"シロギス・ハゼ",     desc:"天秤＋投げ仕掛けを軽く投げる。砂地で手軽。サーフ・河口でも。"},
+  {name:"ウキフカセ釣り",family:false, target:"メジナ・クロダイ",   desc:"ウキでタナを取りコマセを効かせる。堤防・磯のエサ釣り。"},
+  {name:"探り・穴釣り",  family:true,  target:"カサゴ・メバル",     desc:"テトラ際や敷石の隙間を探る根魚狙い。短竿で手軽。"},
+  {name:"エギング",      family:false, target:"アオリイカ",         desc:"エギ(2.5〜3.5号)をしゃくる。春は親イカ・秋は新子。"},
+  {name:"ルアー釣り",    family:false, target:"ヒラメ・カマス・シーバス", desc:"ミノー/ジグ/ワーム等で回遊・フィッシュイーターを狙う。"}
+];
+
+/* ===================== 状態 ===================== */
+const state = { date: new Date(), family:false };
+
+/* ===================== レンダリング ===================== */
+const $ = s => document.querySelector(s);
+
+function fmtDate(d){
+  const w = ["日","月","火","水","木","金","土"][d.getDay()];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日(${w})`;
+}
+
+function renderShio(){
+  const {name, age, lunarDay} = calcShio(state.date);
+  const t = TIDES[name];
+  const badge = $("#shioBadge");
+  badge.className = "shio-badge " + t.cls;
+  badge.innerHTML = `<span class="nm">${name}</span><span class="sub">${t.desc}</span>`;
+  $("#shioName").textContent = name;
+  $("#shioAge").innerHTML = `${fmtDate(state.date)}・月齢 約${age.toFixed(1)}（旧暦${lunarDay}日ごろ）`;
+  // 外部潮見表リンク（時刻はアプリでは出さず外部へ）
+  const q = encodeURIComponent("小田原 潮見表");
+  $("#tideLink").href = "https://www.google.com/search?q=" + q;
+}
+
+function renderMonthHead(){
+  const cur = state.date.getMonth();
+  let h = "";
+  for(let i=0;i<12;i++){ h += `<div${i===cur?' style="color:var(--accent);font-weight:700"':''}>${i+1}</div>`; }
+  $("#monthHead").innerHTML = h;
+}
+
+function ytLink(query){
+  return "https://www.youtube.com/results?search_query=" + encodeURIComponent(query);
+}
+
+function renderSpots(){
+  let list = SPOTS.slice();
+  if(state.family){ list.sort((a,b)=> (b.family?1:0)-(a.family?1:0)); }
+  const html = list.map(s=>{
+    const famTag = s.family ? `<span class="tag fam">👨‍👩‍👧 家族向け</span>` : "";
+    const dim = (state.family && !s.family) ? ' style="opacity:.6"' : "";
+    const fishTags = s.fish.map(f=>`<span class="tag">${f}</span>`).join("");
+    return `<div class="rig"${dim}>
+      <div class="spot-head">
+        <span class="svg">${spotSVG()}</span>
+        <div>
+          <h3>${s.name}</h3>
+          <div class="loc">${s.loc}</div>
+        </div>
+      </div>
+      <div class="tags">${famTag}${fishTags}</div>
+      <div class="forbid"><b>⚠ 禁止・注意</b>${s.forbid}</div>
+      <div class="links">
+        <a class="btn yt" target="_blank" rel="noopener" href="${ytLink("小田原 "+s.name+" 釣り")}">▶ YouTubeで見る</a>
+        <a class="btn" target="_blank" rel="noopener" href="${"https://www.google.com/search?q="+encodeURIComponent(s.name+" 釣果")}">🐟 釣果を調べる</a>
+      </div>
+    </div>`;
+  }).join("");
+  $("#spots").innerHTML = html;
+}
+
+function renderFish(){
+  const cur = state.date.getMonth();
+  // ファミリーモード時は手軽な釣りで狙える魚を優先（サビキ/ちょい投げ/探り）
+  const famRigs = new Set(RIGS.filter(r=>r.family).map(r=>r.name));
+  let list = FISH.slice();
+  if(state.family){ list.sort((a,b)=> (famRigs.has(b.rig)?1:0)-(famRigs.has(a.rig)?1:0)); }
+  const html = list.map(f=>{
+    const icon = f.kind==="squid" ? squidSVG(f.color) : fishSVG(f.color);
+    const cells = f.season.map((v,i)=>`<div class="m${i===cur?' now':''}" data-v="${v}" title="${i+1}月"></div>`).join("");
+    return `<div class="fish-row">
+      <div class="fish-name">${icon}<div>${f.name}<br><small>${f.rig}</small></div></div>
+      <div>
+        <div class="months">${cells}</div>
+        <div style="margin-top:4px">
+          <a class="tag" target="_blank" rel="noopener" href="${ytLink("小田原 "+f.name+" 釣り "+f.rig)}">▶ 釣り方を見る</a>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+  $("#fish").innerHTML = html;
+}
+
+function renderRigs(){
+  let list = RIGS.slice();
+  if(state.family){ list.sort((a,b)=> (b.family?1:0)-(a.family?1:0)); }
+  const html = list.map(r=>{
+    const fam = r.family ? `<span class="tag fam">家族向け</span>` : "";
+    return `<div class="rig">
+      <h4>${r.name} ${fam}</h4>
+      <p><b>狙える魚：</b>${r.target}</p>
+      <p>${r.desc}</p>
+    </div>`;
+  }).join("");
+  $("#rigs").innerHTML = html;
+}
+
+function renderAll(){
+  renderShio();
+  renderMonthHead();
+  renderSpots();
+  renderFish();
+  renderRigs();
+}
+
+/* ===================== 初期化 ===================== */
+function pad(n){return String(n).padStart(2,"0");}
+function toInputDate(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const dateEl = $("#date");
+  dateEl.value = toInputDate(state.date);
+  dateEl.addEventListener("change", e=>{
+    const v = e.target.value;
+    if(v){ const [y,m,d]=v.split("-").map(Number); state.date = new Date(y,m-1,d); renderAll(); }
+  });
+  $("#familyToggle").addEventListener("change", e=>{
+    state.family = e.target.checked;
+    $("#familyNote").style.display = state.family ? "block" : "none";
+    renderAll();
+  });
+  renderAll();
+});
+</script>
+</body>
+</html>
