@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#3a5a40" />
+<title>畑ノート｜自然農の畑管理</title>
+<link rel="manifest" href="manifest.json" />
+<style>
+  :root{
+    --bg:#f5f3ec; --card:#ffffff; --ink:#26311f; --sub:#6b7864;
+    --line:#e4e0d3; --green:#3a5a40; --green2:#588157; --sand:#dad7c3;
+    --accent:#a3b18a; --warn:#c1663f; --chip:#eef1e6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#14170f; --card:#1e2318; --ink:#e9ead9; --sub:#9aa88c;
+      --line:#2c331f; --green:#a3b18a; --green2:#b9c79f; --sand:#2c331f;
+      --accent:#728156; --warn:#e08b63; --chip:#242a19; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+    background:var(--bg); color:var(--ink);
+    -webkit-text-size-adjust:100%; line-height:1.6;
+    padding-bottom:calc(72px + env(safe-area-inset-bottom));
+  }
+  header{
+    position:sticky; top:0; z-index:10;
+    background:var(--green); color:#fff;
+    padding:calc(env(safe-area-inset-top) + 14px) 18px 14px;
+    display:flex; align-items:center; gap:10px;
+  }
+  header h1{font-size:18px; margin:0; font-weight:700; letter-spacing:.02em}
+  header .loc{margin-left:auto; font-size:12px; opacity:.85}
+  main{padding:16px; max-width:680px; margin:0 auto}
+  .card{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:16px; padding:16px; margin-bottom:14px;
+  }
+  .card h2{font-size:15px; margin:0 0 4px}
+  .muted{color:var(--sub); font-size:13px}
+  .row{display:flex; gap:10px; align-items:center}
+  .chip{
+    display:inline-block; background:var(--chip); color:var(--green);
+    border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600;
+    border:1px solid var(--line);
+  }
+  label{display:block; font-size:13px; font-weight:600; margin:12px 0 5px}
+  input,select,textarea{
+    width:100%; font-size:16px; padding:11px 12px; color:var(--ink);
+    background:var(--bg); border:1px solid var(--line); border-radius:11px;
+  }
+  .seg{display:flex; gap:8px}
+  .seg button{
+    flex:1; padding:11px; border-radius:11px; border:1px solid var(--line);
+    background:var(--bg); color:var(--ink); font-size:15px; font-weight:600;
+  }
+  .seg button.on{background:var(--green); color:#fff; border-color:var(--green)}
+  .btn{
+    display:block; width:100%; padding:14px; border:none; border-radius:13px;
+    background:var(--green); color:#fff; font-size:16px; font-weight:700; margin-top:16px;
+  }
+  .btn.ghost{background:transparent; color:var(--green); border:1px solid var(--green)}
+  .btn.small{width:auto; padding:9px 14px; font-size:14px; margin:0}
+  .plant{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:14px; margin-bottom:12px;
+  }
+  .plant .top{display:flex; align-items:center; gap:10px}
+  .plant .emoji{font-size:26px}
+  .plant .name{font-weight:700; font-size:16px}
+  .plant .meta{font-size:12px; color:var(--sub)}
+  .phasebar{display:flex; gap:4px; margin:12px 0 8px}
+  .phasebar .seg2{flex:1; height:6px; border-radius:3px; background:var(--sand)}
+  .phasebar .seg2.done{background:var(--green2)}
+  .phasebar .seg2.now{background:var(--warn)}
+  .task{
+    background:var(--chip); border-radius:12px; padding:11px 12px; font-size:14px; margin-top:8px;
+  }
+  .task b{color:var(--green)}
+  details{margin-top:10px; border-top:1px solid var(--line); padding-top:10px}
+  summary{font-size:14px; font-weight:600; cursor:pointer; color:var(--green); list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸ "; }
+  details[open] summary::before{content:"▾ "; }
+  .kv{font-size:13.5px; margin:8px 0}
+  .kv .k{font-weight:700; color:var(--green)}
+  .comp{font-size:13.5px; margin:6px 0; padding-left:4px}
+  .comp .n{font-weight:700}
+  .empty{text-align:center; color:var(--sub); padding:40px 10px}
+  .del{background:none;border:none;color:var(--warn);font-size:13px;margin-left:auto}
+  nav{
+    position:fixed; bottom:0; left:0; right:0; z-index:20;
+    background:var(--card); border-top:1px solid var(--line);
+    display:flex; padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav button{
+    flex:1; background:none; border:none; padding:10px 4px 8px; color:var(--sub);
+    font-size:11px; display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  nav button .ic{font-size:20px}
+  nav button.on{color:var(--green)}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .cropcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+  .cropcard .e{font-size:28px}
+  .cropcard .n{font-weight:700;font-size:14px;margin-top:4px}
+  .cropcard .c{font-size:11px;color:var(--sub)}
+  .hidden{display:none}
+  .aibox{background:var(--chip);border:1px dashed var(--accent);border-radius:12px;padding:12px;margin-top:10px;font-size:13px}
+  .aibox textarea{margin-top:8px;background:var(--card);font-size:13px;height:120px}
+</style>
+</head>
+<body>
+<header>
+  <span style="font-size:22px">🌱</span>
+  <h1>畑ノート</h1>
+  <span class="loc">神奈川・自然農</span>
+</header>
+
+<main>
+  <!-- ========== ホーム(畑) ========== -->
+  <section id="view-home">
+    <div id="plantList"></div>
+    <button class="btn" onclick="go('add')">＋ 畑に植えたものを記録</button>
+  </section>
+
+  <!-- ========== 記録する ========== -->
+  <section id="view-add" class="hidden">
+    <div class="card">
+      <h2>植え付けを記録</h2>
+      <label>何を植えた？</label>
+      <select id="f-crop">
+        <option value="">— 作物を選ぶ —</option>
+      </select>
+      <div id="f-other-wrap" class="hidden">
+        <label>作物名（自由入力）</label>
+        <input id="f-other" placeholder="例：春菊" />
+        <p class="muted" style="margin-top:6px">データベースに無い作物は、記録後「AIに相談」の質問文を作れます。</p>
+      </div>
+
+      <label>いつ植えた？</label>
+      <input id="f-date" type="date" />
+
+      <label>種から？ 苗から？</label>
+      <div class="seg" id="f-method">
+        <button data-v="種" class="on">🌱 種から</button>
+        <button data-v="苗">🪴 苗から</button>
+      </div>
+
+      <label>どこに植えた？（区画名など）</label>
+      <input id="f-place" placeholder="例：南の畝・A区画・道路側" />
+
+      <label>メモ（任意）</label>
+      <input id="f-note" placeholder="例：〇〇さんの自家採種の種" />
+
+      <button class="btn" onclick="saveRecord()">記録する</button>
+      <button class="btn ghost" onclick="go('home')" style="margin-top:8px">やめる</button>
+    </div>
+  </section>
+
+  <!-- ========== 図鑑 ========== -->
+  <section id="view-book" class="hidden">
+    <div class="card">
+      <h2>作物図鑑</h2>
+      <p class="muted">自然農での育て方・間引き方・相性・土。神奈川(温暖地)の目安。</p>
+    </div>
+    <div class="grid2" id="bookGrid"></div>
+  </section>
+
+  <!-- ========== 土の診断 ========== -->
+  <section id="view-soil" class="hidden">
+    <div class="card">
+      <h2>🌾 生えている草で土を診断</h2>
+      <p class="muted">畑に自然に生えている草(指標草)は、その土の性質を教えてくれます。当てはまる草を選んでください。</p>
+      <select id="soilSelect" onchange="showSoil()">
+        <option value="">— よく生えている草を選ぶ —</option>
+      </select>
+      <div id="soilResult"></div>
+    </div>
+    <div class="card">
+      <h2>自然農の土づくり 基本</h2>
+      <div class="kv"><span class="k">① 耕さない</span><br>土の団粒構造と菌根菌・微生物のネットワークを壊さない。前作の根穴が水と空気の通り道になる。</div>
+      <div class="kv"><span class="k">② 草を敵にしない・刈って敷く</span><br>草は根ごと抜かず地際で刈り、その場に敷く(草マルチ)。有機物・保湿・雑草抑制・微生物のエサに。</div>
+      <div class="kv"><span class="k">③ 肥料を入れない/ごく少量</span><br>マメ科の窒素固定と草の分解でまかなう。足す場合も米ぬか・もみ殻くん炭をごく薄く補助的に。</div>
+      <div class="kv"><span class="k">④ 水はけは畝の高さで</span><br>湿りやすい畑は畝を高く。乾く畑は草マルチを厚く。</div>
+      <div class="kv"><span class="k">⑤ 何年もかけて土を育てる</span><br>初年度はやせ地に強い作物(サツマイモ・大根・豆)から。年々ふかふかになる。</div>
+    </div>
+    <div class="card">
+      <h2>目指す土の状態</h2>
+      <p class="muted">ふかふかの<b>団粒構造</b>／適度な水はけと水もち／表面は刈草で覆われ乾かない／ミミズや菌糸が見える／弱酸性〜中性。これを“作る”のではなく、草と根と微生物に“育ててもらう”のが自然農です。</p>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button id="nav-home" class="on" onclick="go('home')"><span class="ic">🏡</span>畑</button>
+  <button id="nav-add" onclick="go('add')"><span class="ic">➕</span>記録</button>
+  <button id="nav-book" onclick="go('book')"><span class="ic">📖</span>図鑑</button>
+  <button id="nav-soil" onclick="go('soil')"><span class="ic">🌾</span>土</button>
+</nav>
+
+<script src="crops.js"></script>
+<script>
+/* ---------- データ ---------- */
+const CROP_BY_ID = Object.fromEntries(CROPS.map(c=>[c.id,c]));
+const store = {
+  get(){ try{return JSON.parse(localStorage.getItem("hatake")||"[]")}catch(e){return[]} },
+  set(v){ localStorage.setItem("hatake", JSON.stringify(v)) },
+};
+let method = "種";
+
+/* ---------- 画面遷移 ---------- */
+function go(v){
+  ["home","add","book","soil"].forEach(x=>{
+    document.getElementById("view-"+x).classList.toggle("hidden", x!==v);
+    document.getElementById("nav-"+x).classList.toggle("on", x===v);
+  });
+  if(v==="home") renderHome();
+  if(v==="book") renderBook();
+  window.scrollTo(0,0);
+}
+
+/* ---------- 経過日数・フェーズ ---------- */
+function daysBetween(dateStr){
+  const d = new Date(dateStr+"T00:00:00");
+  const now = new Date();
+  return Math.floor((now - d)/86400000);
+}
+function currentPhase(crop, days){
+  if(!crop.phases) return null;
+  for(const p of crop.phases){ if(days>=p.from && days<=p.to) return p; }
+  if(days < crop.phases[0].from) return crop.phases[0];
+  return crop.phases[crop.phases.length-1]; // 収穫期以降
+}
+
+/* ---------- ホーム描画 ---------- */
+function renderHome(){
+  const list = store.get();
+  const el = document.getElementById("plantList");
+  if(list.length===0){
+    el.innerHTML = `<div class="empty">まだ記録がありません。<br>下のボタンから畑に植えたものを登録しましょう 🌱</div>`;
+    return;
+  }
+  el.innerHTML = list.map(rec=>{
+    const crop = CROP_BY_ID[rec.cropId];
+    const days = daysBetween(rec.date);
+    const name = crop ? crop.name : rec.otherName;
+    const emoji = crop ? crop.emoji : "🌱";
+    let body = "";
+    if(crop){
+      const ph = currentPhase(crop, days);
+      const idx = crop.phases.indexOf(ph);
+      const bars = crop.phases.map((p,i)=>
+        `<div class="seg2 ${i<idx?'done':''} ${i===idx?'now':''}"></div>`).join("");
+      const harvestNote = days>crop.days ? `<span class="chip">収穫めやす過ぎ ${days-crop.days}日</span>` : `<span class="chip">収穫まであと約${Math.max(0,crop.days-days)}日</span>`;
+      body = `
+        <div class="phasebar">${bars}</div>
+        <div class="row" style="justify-content:space-between">
+          <span class="chip">今：${ph.name}</span>${harvestNote}
+        </div>
+        <div class="task"><b>やること</b>：${ph.task}</div>
+        <details><summary>育て方・間引き・相性・土</summary>${cropDetail(crop)}</details>
+      `;
+    } else {
+      body = `
+        <div class="task">この作物はデータベース未収録です。下のボタンでAI相談用の質問文を作れます。</div>
+        <button class="btn ghost small" style="margin-top:10px" onclick="aiPrompt('${rec.id}')">🤖 AIに聞く質問文を作る</button>
+        <div id="ai-${rec.id}"></div>
+      `;
+    }
+    return `
+    <div class="plant">
+      <div class="top">
+        <span class="emoji">${emoji}</span>
+        <div>
+          <div class="name">${name}</div>
+          <div class="meta">${rec.date}（${days}日目）・${rec.method}${rec.place?"・"+rec.place:""}</div>
+        </div>
+        <button class="del" onclick="delRec('${rec.id}')">削除</button>
+      </div>
+      ${rec.note?`<div class="meta" style="margin-top:6px">📝 ${rec.note}</div>`:""}
+      ${body}
+    </div>`;
+  }).join("");
+}
+
+function cropDetail(c){
+  const comp = (c.companions||[]).map(x=>`<div class="comp">🤝 <span class="n">${x.name}</span> — ${x.reason}</div>`).join("");
+  const bad = (c.bad&&c.bad.length)?`<div class="kv"><span class="k">相性が悪い</span><br>`+c.bad.map(x=>`✕ ${x.name}（${x.reason}）`).join("<br>")+`</div>`:"";
+  return `
+    <div class="kv"><span class="k">🌱 自然農での育て方</span><br>${c.natural}</div>
+    <div class="kv"><span class="k">✂️ 間引き方</span><br>${c.thinning}</div>
+    <div class="kv"><span class="k">🤝 一緒に植えるといいもの</span></div>${comp}
+    ${bad}
+    <div class="kv"><span class="k">🟤 ベストな土</span><br>${c.soil}</div>
+    <div class="kv"><span class="k">🔧 自然農での土の調整</span><br>${c.soilAdjust}</div>
+    <div class="kv"><span class="k">🗓 種まき/植え付け適期(神奈川)</span><br>${c.sow}</div>
+  `;
+}
+
+/* ---------- 記録 ---------- */
+function initForm(){
+  const sel = document.getElementById("f-crop");
+  const cats = {};
+  CROPS.forEach(c=>{ (cats[c.cat]=cats[c.cat]||[]).push(c); });
+  let html = `<option value="">— 作物を選ぶ —</option>`;
+  Object.keys(cats).forEach(cat=>{
+    html += `<optgroup label="${cat}">`;
+    cats[cat].forEach(c=> html+=`<option value="${c.id}">${c.emoji} ${c.name}</option>`);
+    html += `</optgroup>`;
+  });
+  html += `<optgroup label="その他"><option value="__other">＋ その他（自由入力）</option></optgroup>`;
+  sel.innerHTML = html;
+  sel.onchange = ()=>{
+    const other = sel.value==="__other";
+    document.getElementById("f-other-wrap").classList.toggle("hidden", !other);
+    const c = CROP_BY_ID[sel.value];
+    if(c) setMethod(c.method==="苗"||c.method==="苗(つる)"?"苗":"種");
+  };
+  document.querySelectorAll("#f-method button").forEach(b=>{
+    b.onclick=()=>setMethod(b.dataset.v);
+  });
+  document.getElementById("f-date").value = new Date().toISOString().slice(0,10);
+}
+function setMethod(v){
+  method=v;
+  document.querySelectorAll("#f-method button").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
+}
+function saveRecord(){
+  const sel = document.getElementById("f-crop").value;
+  if(!sel){ alert("作物を選んでください"); return; }
+  const date = document.getElementById("f-date").value;
+  if(!date){ alert("植えた日を入れてください"); return; }
+  const rec = {
+    id: "r"+Date.now(),
+    cropId: sel==="__other"? null : sel,
+    otherName: sel==="__other"? (document.getElementById("f-other").value||"名称未設定") : null,
+    date, method,
+    place: document.getElementById("f-place").value.trim(),
+    note: document.getElementById("f-note").value.trim(),
+  };
+  const list = store.get(); list.unshift(rec); store.set(list);
+  // reset
+  document.getElementById("f-crop").value="";
+  document.getElementById("f-other").value="";
+  document.getElementById("f-place").value="";
+  document.getElementById("f-note").value="";
+  document.getElementById("f-other-wrap").classList.add("hidden");
+  go("home");
+}
+function delRec(id){
+  if(!confirm("この記録を削除しますか？")) return;
+  store.set(store.get().filter(r=>r.id!==id));
+  renderHome();
+}
+
+/* ---------- AI相談プロンプト生成 ---------- */
+function aiPrompt(id){
+  const rec = store.get().find(r=>r.id===id);
+  const days = daysBetween(rec.date);
+  const txt =
+`あなたは自然農(不耕起・無肥料・無農薬、川口由一さんの自然農の考え方)に詳しい農家です。神奈川県(温暖地)の家庭菜園を前提に、次の作物について教えてください。
+
+・作物：${rec.otherName}
+・植えた日：${rec.date}（今日で${days}日目）
+・種から/苗から：${rec.method}
+
+以下を具体的に：
+1. 今の時期(${days}日目)の状況と、今やるべき作業
+2. 自然農での育て方のコツ
+3. 自然農での間引き方
+4. 一緒に植えるとよい作物(コンパニオンプランツ)と、その理由
+5. ベストな土の状態と、自然農でそこに近づける方法`;
+  const box = document.getElementById("ai-"+id);
+  box.innerHTML = `<div class="aibox">この質問文をClaudeやChatGPTに貼り付けてください：
+    <textarea readonly onclick="this.select()">${txt}</textarea>
+    <button class="btn small" style="margin-top:8px" onclick="copyText(this)">📋 コピー</button></div>`;
+}
+function copyText(btn){
+  const ta = btn.parentElement.querySelector("textarea");
+  ta.select();
+  try{ document.execCommand("copy"); btn.textContent="✓ コピーしました"; }
+  catch(e){ navigator.clipboard && navigator.clipboard.writeText(ta.value); btn.textContent="✓ コピーしました"; }
+}
+
+/* ---------- 図鑑 ---------- */
+function renderBook(){
+  const g = document.getElementById("bookGrid");
+  g.innerHTML = CROPS.map(c=>
+    `<div class="cropcard" onclick="openCrop('${c.id}')">
+      <div class="e">${c.emoji}</div><div class="n">${c.name}</div><div class="c">${c.cat}</div>
+    </div>`).join("");
+}
+function openCrop(id){
+  const c = CROP_BY_ID[id];
+  const g = document.getElementById("bookGrid");
+  g.innerHTML = `<div class="card" style="grid-column:1/-1">
+    <div class="row"><span style="font-size:28px">${c.emoji}</span>
+      <div><div class="name" style="font-weight:700;font-size:17px">${c.name}</div>
+      <div class="muted">${c.cat}・${c.method==="苗"?"苗から":"種から"}が基本</div></div>
+      <button class="btn small ghost" style="margin-left:auto" onclick="renderBook()">← 一覧</button>
+    </div>
+    <div style="margin-top:12px">${cropDetail(c)}</div>
+    <div class="kv" style="margin-top:12px"><span class="k">育ちの目安</span><br>${c.phases.map(p=>`${p.name}(${p.from}〜${p.to}日)`).join(" → ")}／収穫まで約${c.days}日</div>
+  </div>`;
+  window.scrollTo(0,0);
+}
+
+/* ---------- 土の診断 ---------- */
+function initSoil(){
+  const sel = document.getElementById("soilSelect");
+  sel.innerHTML = `<option value="">— よく生えている草を選ぶ —</option>` +
+    INDICATORS.map((x,i)=>`<option value="${i}">${x.emoji} ${x.plant}</option>`).join("");
+}
+function showSoil(){
+  const i = document.getElementById("soilSelect").value;
+  const box = document.getElementById("soilResult");
+  if(i===""){ box.innerHTML=""; return; }
+  const x = INDICATORS[i];
+  box.innerHTML = `<div class="task" style="margin-top:12px">
+    <div class="kv"><span class="k">推測される土の状態</span><br>${x.state}</div>
+    <div class="kv"><span class="k">自然農での対応</span><br>${x.advice}</div>
+  </div>`;
+}
+
+/* ---------- 起動 ---------- */
+initForm(); initSoil(); renderHome();
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+</script>
+</body>
+</html>

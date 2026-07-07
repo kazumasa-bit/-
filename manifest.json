@@ -1,0 +1,13 @@
+{
+  "name": "畑ノート｜自然農の畑管理",
+  "short_name": "畑ノート",
+  "description": "畑に植えたものを記録すると、経過日数から今の状況と自然農のアドバイスが出るツール",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f3ec",
+  "theme_color": "#3a5a40",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
