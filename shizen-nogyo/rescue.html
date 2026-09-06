@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>データの確認と復旧 — 自然農業シミュレーター</title>
+<style>
+  :root{
+    --bg:#efe9db; --card:#fffdf7; --ink:#252b31; --sub:#6b5a3e;
+    --navy:#1f3b57; --line:#d9d0ba; --ok:#3c6b45; --warn:#a8452c;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Hiragino Sans","Yu Gothic",sans-serif;
+    font-size:15px;line-height:1.9;
+    padding:0 14px calc(40px + env(safe-area-inset-bottom));
+    -webkit-text-size-adjust:100%;
+  }
+  header{padding:26px 0 14px;border-bottom:1px solid var(--line)}
+  h1{font-size:19px;margin:0 0 6px}
+  header p{margin:0;font-size:13px;color:var(--sub)}
+  h2{font-size:15px;margin:26px 0 10px;color:var(--navy)}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px 15px;margin:10px 0;
+  }
+  .origin{font-size:13px;word-break:break-all;background:#f6f2e6;border-radius:10px;padding:10px 12px;margin:8px 0 0}
+  .origin b{color:var(--navy)}
+  .big{font-size:26px;font-weight:700;color:var(--navy);line-height:1.3}
+  .big.zero{color:var(--warn)}
+  .muted{color:var(--sub);font-size:13px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--sub);font-weight:500;white-space:nowrap}
+  td.k{word-break:break-all;font-family:ui-monospace,Menlo,monospace}
+  td.n{text-align:right;white-space:nowrap}
+  .tag{display:inline-block;font-size:11px;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:1px}
+  .tag.now{background:#e3ecdf;color:var(--ok)}
+  .tag.old{background:#f2e5df;color:var(--warn)}
+  button{
+    font:inherit;font-size:15px;border:0;border-radius:12px;padding:12px 16px;
+    background:var(--navy);color:#fff;width:100%;margin-top:10px;cursor:pointer;
+  }
+  button.ghost{background:#e7dfcc;color:var(--ink)}
+  button:disabled{opacity:.4;cursor:default}
+  textarea{
+    width:100%;min-height:150px;font-family:ui-monospace,Menlo,monospace;font-size:12px;
+    border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;
+    -webkit-user-select:text;user-select:text;
+  }
+  .msg{margin-top:10px;font-size:13px;padding:10px 12px;border-radius:10px;display:none}
+  .msg.show{display:block}
+  .msg.ok{background:#e3ecdf;color:var(--ok)}
+  .msg.ng{background:#f2e5df;color:var(--warn)}
+  ol{padding-left:1.3em;margin:8px 0}
+  li{margin:6px 0}
+  .foot{margin-top:28px;font-size:12px;color:var(--sub);text-align:center}
+  a{color:var(--navy)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>データの確認と復旧</h1>
+  <p>マイ畑の記録がこの端末に残っているかを調べ、書き出し・戻しができます。</p>
+</header>
+
+<div class="card">
+  <div class="muted">いま見ているアドレス</div>
+  <div class="origin" id="origin"></div>
+  <p class="muted" style="margin:10px 0 0">
+    記録はこのアドレス（ドメイン）ごとに別々に保存されます。アドレスが変わると、
+    前のアドレスに入れた記録はこの画面からは見えません。中身は消えておらず、前のアドレスを開けばそのまま残っています。
+  </p>
+</div>
+
+<h2>マイ畑の記録</h2>
+<div class="card">
+  <div class="big" id="mineCount">…</div>
+  <div class="muted" id="mineNote"></div>
+</div>
+
+<h2>この端末に保存されているもの</h2>
+<div class="card">
+  <table id="keyTable"><tbody></tbody></table>
+  <p class="muted" id="keyNote" style="margin:10px 0 0"></p>
+</div>
+
+<h2>古い名前のデータから戻す</h2>
+<div class="card">
+  <p class="muted" style="margin:0">
+    アプリの名前が変わったときの古い保存名（<code>yui-…</code>）が残っていれば、いまの保存名に戻せます。
+    いまのデータがある場合は上書きしません。
+  </p>
+  <button id="btnLegacy" disabled>古いデータを探して戻す</button>
+  <div class="msg" id="msgLegacy"></div>
+</div>
+
+<h2>書き出し（バックアップ）</h2>
+<div class="card">
+  <p class="muted" style="margin:0">
+    下の文字をぜんぶ選んでコピーし、メモアプリや自分あてのLINEに貼って残しておいてください。
+    アドレスが変わっても、これがあれば戻せます。
+  </p>
+  <button id="btnExport">いまの中身を書き出す</button>
+  <textarea id="dump" placeholder="ここに書き出した内容が出ます" spellcheck="false"></textarea>
+  <button class="ghost" id="btnCopy">コピーする</button>
+  <div class="msg" id="msgExport"></div>
+</div>
+
+<h2>読み込み（復元）</h2>
+<div class="card">
+  <p class="muted" style="margin:0">
+    書き出しておいた文字を上の欄に貼りつけてから押してください。いまの中身は置きかえられます。
+  </p>
+  <button class="ghost" id="btnImport">貼りつけた内容で復元する</button>
+  <div class="msg" id="msgImport"></div>
+</div>
+
+<h2>見つからないときは</h2>
+<div class="card">
+  <ol>
+    <li>アプリを開き直すアドレスが、いつも使っていたものと同じか確かめる（末尾に文字列が付いた別アドレスだと中身は空になります）。</li>
+    <li>ホーム画面のアイコンから開いた場合と、ブラウザで開いた場合とで、保存先が分かれていることがあります。両方でこの画面を開いて確かめてください。</li>
+    <li>前のアドレスが分かる場合は、そこでこの画面を開いて「書き出し」→ 新しいアドレスで「読み込み」。</li>
+  </ol>
+</div>
+
+<p class="foot"><a href="./">← アプリに戻る</a></p>
+
+<script>
+(function () {
+  var LIVE = ['shizen-mine', 'shizen-plan', 'shizen-seeds', 'shizen-mfield'];
+  var LEGACY = { 'yui-mine': 'shizen-mine', 'yui-plan': 'shizen-plan', 'yui-seeds': 'shizen-seeds' };
+  var LABEL = {
+    'shizen-mine': 'マイ畑の記録', 'shizen-plan': '作付けプラン',
+    'shizen-seeds': '種の在庫箱', 'shizen-mfield': '選んでいる畑',
+    'yui-mine': 'マイ畑の記録（旧）', 'yui-plan': '作付けプラン（旧）',
+    'yui-seeds': '種の在庫箱（旧）', 'odawara-farm-plan': '作付けプラン（最初の版）'
+  };
+
+  function $(id) { return document.getElementById(id); }
+  function show(el, cls, text) { el.className = 'msg show ' + cls; el.textContent = text; }
+  function bytes(s) { return (s == null) ? 0 : new Blob([s]).size; }
+  function count(raw) {
+    try { var v = JSON.parse(raw); return Array.isArray(v) ? v.length : null; } catch (e) { return null; }
+  }
+  function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  /* ── いまのアドレス ── */
+  $('origin').innerHTML = '<b>' + location.origin.replace(/</g, '&lt;') + '</b>' +
+    location.pathname.replace(/</g, '&lt;');
+
+  /* ── マイ畑の件数 ── */
+  var mineRaw = get('shizen-mine');
+  var mineN = count(mineRaw);
+  var el = $('mineCount');
+  if (mineN === null) {
+    el.textContent = '見つかりません';
+    el.className = 'big zero';
+    $('mineNote').textContent = 'このアドレスには、マイ畑の記録が保存されていません。';
+  } else {
+    el.textContent = mineN + ' 件';
+    el.className = 'big' + (mineN === 0 ? ' zero' : '');
+    $('mineNote').textContent = mineN === 0
+      ? '保存の箱はありますが、中身が空です。'
+      : 'この端末・このアドレスに残っています。下の「書き出し」で控えを取っておいてください。';
+  }
+
+  /* ── 保存されているものの一覧 ── */
+  var rows = [], total = 0, other = 0;
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (!k) continue;
+      var raw = localStorage.getItem(k);
+      var b = bytes(raw);
+      total += b;
+      var known = LABEL[k];
+      if (!known) { other++; continue; }
+      rows.push({ k: k, label: known, n: count(raw), b: b, old: k.indexOf('yui-') === 0 || k === 'odawara-farm-plan' });
+    }
+  } catch (e) { }
+
+  var tb = $('keyTable').getElementsByTagName('tbody')[0];
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td class="muted">アプリのデータは見つかりませんでした。</td></tr>';
+  } else {
+    rows.sort(function (a, b2) { return a.old - b2.old; });
+    var h = '<tr><th>中身</th><th>保存名</th><th style="text-align:right">件数</th></tr>';
+    rows.forEach(function (r) {
+      h += '<tr><td>' + r.label +
+        '<span class="tag ' + (r.old ? 'old">古い' : 'now">いま') + '</span></td>' +
+        '<td class="k">' + r.k + '</td>' +
+        '<td class="n">' + (r.n === null ? '—' : r.n + ' 件') + '</td></tr>';
+    });
+    tb.innerHTML = h;
+  }
+  $('keyNote').textContent = 'ほかに ' + other + ' 件・合計 ' + Math.round(total / 1024 * 10) / 10 + ' KB がこのアドレスに入っています。';
+
+  /* ── 古い名前から戻す ── */
+  var found = [];
+  for (var lk in LEGACY) if (get(lk) !== null) found.push(lk);
+  var btnL = $('btnLegacy');
+  if (found.length) {
+    btnL.disabled = false;
+    btnL.textContent = '古いデータが ' + found.length + ' 件みつかりました。戻す';
+  }
+  btnL.addEventListener('click', function () {
+    var moved = [];
+    found.forEach(function (lk) {
+      var nk = LEGACY[lk], v = get(lk);
+      if (v === null) return;
+      var cur = get(nk), curN = count(cur);
+      if (cur !== null && curN) return;              /* いまのデータが入っていれば触らない */
+      try { localStorage.setItem(nk, v); moved.push(LABEL[lk]); } catch (e) { }
+    });
+    if (moved.length) {
+      show($('msgLegacy'), 'ok', moved.join('・') + ' を戻しました。アプリを開き直してください。');
+      btnL.disabled = true;
+    } else {
+      show($('msgLegacy'), 'ng', '戻せるものはありませんでした（いまのデータが入っているため上書きしていません）。');
+    }
+  });
+
+  /* ── 書き出し ── */
+  $('btnExport').addEventListener('click', function () {
+    var out = { app: 'shizen-nogyo', v: 1, at: new Date().toISOString(), origin: location.origin, data: {} };
+    try {
+      for (var i2 = 0; i2 < localStorage.length; i2++) {
+        var k2 = localStorage.key(i2);
+        if (k2 && (k2.indexOf('shizen-') === 0 || k2.indexOf('yui-') === 0 || k2 === 'odawara-farm-plan')) {
+          out.data[k2] = localStorage.getItem(k2);
+        }
+      }
+    } catch (e) { }
+    var n = 0; for (var _ in out.data) n++;
+    $('dump').value = JSON.stringify(out);
+    show($('msgExport'), n ? 'ok' : 'ng', n ? (n + ' 件を書き出しました。コピーして残してください。') : '書き出すデータがありませんでした。');
+  });
+
+  $('btnCopy').addEventListener('click', function () {
+    var ta = $('dump');
+    if (!ta.value) { show($('msgExport'), 'ng', '先に「書き出す」を押してください。'); return; }
+    ta.focus(); ta.setSelectionRange(0, ta.value.length);
+    var done = false;
+    try { done = document.execCommand('copy'); } catch (e) { }
+    if (!done && navigator.clipboard) {
+      navigator.clipboard.writeText(ta.value).then(function () {
+        show($('msgExport'), 'ok', 'コピーしました。');
+      }, function () {
+        show($('msgExport'), 'ng', 'コピーできませんでした。上の欄を長押しして選んでコピーしてください。');
+      });
+      return;
+    }
+    show($('msgExport'), done ? 'ok' : 'ng',
+      done ? 'コピーしました。' : 'コピーできませんでした。上の欄を長押しして選んでコピーしてください。');
+  });
+
+  /* ── 読み込み ── */
+  $('btnImport').addEventListener('click', function () {
+    var txt = $('dump').value.trim();
+    if (!txt) { show($('msgImport'), 'ng', '上の欄に、書き出しておいた文字を貼りつけてください。'); return; }
+    var obj;
+    try { obj = JSON.parse(txt); } catch (e) { show($('msgImport'), 'ng', '中身を読み取れませんでした。全部が貼れているか確かめてください。'); return; }
+    if (!obj || !obj.data || typeof obj.data !== 'object') { show($('msgImport'), 'ng', 'このアプリの書き出しではないようです。'); return; }
+    var keys = []; for (var k3 in obj.data) keys.push(k3);
+    if (!keys.length) { show($('msgImport'), 'ng', '中身が空でした。'); return; }
+    if (!window.confirm('いまのデータを、貼りつけた内容で置きかえます。よろしいですか？')) return;
+    var okN = 0;
+    keys.forEach(function (k4) {
+      try { localStorage.setItem(k4, obj.data[k4]); okN++; } catch (e) { }
+    });
+    show($('msgImport'), okN ? 'ok' : 'ng',
+      okN ? (okN + ' 件を復元しました。アプリを開き直してください。') : '復元できませんでした。');
+  });
+})();
+</script>
+
+</body>
+</html>
