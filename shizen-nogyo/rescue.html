@@ -118,12 +118,27 @@
   <div class="msg" id="msgImport"></div>
 </div>
 
-<h2>見つからないときは</h2>
+<h2>見つからないときは：前のアドレスから持ってくる</h2>
+<div class="card">
+  <p style="margin:0 0 8px">このアプリは 2026-09-01 に引っ越しています。前のアドレスに記録が残っている可能性があります。</p>
+  <ol style="margin:0 0 12px">
+    <li><code>https://yui-no-hatake.netlify.app</code>（「結の畑」のころ）</li>
+    <li><code>https://shizen-nogyo.netlify.app</code>（引っ越し直前）</li>
+  </ol>
+  <p class="muted" style="margin:0">
+    パソコンの Chrome で上のアドレスを開き、<b>F12</b> →「Console」に下の1行を貼って Enter。
+    コピーされた文字を、この画面の「読み込み」の欄に貼りつけてください。
+  </p>
+  <textarea id="oneliner" readonly spellcheck="false" style="min-height:110px;margin-top:10px"></textarea>
+  <button class="ghost" id="btnCopyOne">この1行をコピー</button>
+  <div class="msg" id="msgOne"></div>
+</div>
+
+<h2>そのほか確かめること</h2>
 <div class="card">
   <ol>
-    <li>アプリを開き直すアドレスが、いつも使っていたものと同じか確かめる（末尾に文字列が付いた別アドレスだと中身は空になります）。</li>
+    <li>いま開いているアドレスが、いつも使っていたものと同じか（末尾に文字列が付いた別アドレスだと中身は空になります）。</li>
     <li>ホーム画面のアイコンから開いた場合と、ブラウザで開いた場合とで、保存先が分かれていることがあります。両方でこの画面を開いて確かめてください。</li>
-    <li>前のアドレスが分かる場合は、そこでこの画面を開いて「書き出し」→ 新しいアドレスで「読み込み」。</li>
   </ol>
 </div>
 
@@ -207,15 +222,22 @@
     btnL.disabled = false;
     btnL.textContent = '古いデータが ' + found.length + ' 件みつかりました。戻す';
   }
-  btnL.addEventListener('click', function () {
+
+  /* 古い保存名 → いまの保存名。いまのデータが空のときだけ移す */
+  function restoreLegacy() {
     var moved = [];
-    found.forEach(function (lk) {
+    for (var lk in LEGACY) {
       var nk = LEGACY[lk], v = get(lk);
-      if (v === null) return;
+      if (v === null) continue;
       var cur = get(nk), curN = count(cur);
-      if (cur !== null && curN) return;              /* いまのデータが入っていれば触らない */
+      if (cur !== null && curN) continue;
       try { localStorage.setItem(nk, v); moved.push(LABEL[lk]); } catch (e) { }
-    });
+    }
+    return moved;
+  }
+
+  btnL.addEventListener('click', function () {
+    var moved = restoreLegacy();
     if (moved.length) {
       show($('msgLegacy'), 'ok', moved.join('・') + ' を戻しました。アプリを開き直してください。');
       btnL.disabled = true;
@@ -272,8 +294,32 @@
     keys.forEach(function (k4) {
       try { localStorage.setItem(k4, obj.data[k4]); okN++; } catch (e) { }
     });
-    show($('msgImport'), okN ? 'ok' : 'ng',
-      okN ? (okN + ' 件を復元しました。アプリを開き直してください。') : '復元できませんでした。');
+    if (!okN) { show($('msgImport'), 'ng', '復元できませんでした。'); return; }
+    /* 古い保存名で入ってきたぶんは、いまの保存名へ続けて移す */
+    var moved = restoreLegacy();
+    show($('msgImport'), 'ok', okN + ' 件を復元しました。' +
+      (moved.length ? '（うち ' + moved.join('・') + ' を今の形に移しました）' : '') +
+      'アプリを開き直してください。');
+  });
+
+  /* ── 前のアドレスで実行する1行 ── */
+  var ONE = "copy(JSON.stringify({app:'shizen-nogyo',v:1,data:Object.fromEntries("
+    + "Object.keys(localStorage).filter(function(k){return /^(yui-|shizen-|odawara-farm-plan)/.test(k)})"
+    + ".map(function(k){return [k,localStorage.getItem(k)]}))}))";
+  $('oneliner').value = ONE;
+  $('btnCopyOne').addEventListener('click', function () {
+    var ta = $('oneliner');
+    ta.removeAttribute('readonly');
+    ta.focus(); ta.setSelectionRange(0, ta.value.length);
+    var done = false;
+    try { done = document.execCommand('copy'); } catch (e) { }
+    ta.setAttribute('readonly', 'readonly');
+    if (!done && navigator.clipboard) {
+      navigator.clipboard.writeText(ONE).then(function () { show($('msgOne'), 'ok', 'コピーしました。'); },
+        function () { show($('msgOne'), 'ng', '長押しして選んでコピーしてください。'); });
+      return;
+    }
+    show($('msgOne'), done ? 'ok' : 'ng', done ? 'コピーしました。' : '長押しして選んでコピーしてください。');
   });
 })();
 </script>
