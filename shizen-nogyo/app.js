@@ -264,6 +264,39 @@
   }
 
   /* ───────── タブ1：今月やること ───────── */
+  /* 画面のあたまに置く、短い説明（何の画面で、どこと繋がるか） */
+  function explain_(title, body) {
+    return '<div class="card card-pad" style="border-left:4px solid var(--green,#5a7d3a)">' +
+      '<div style="font-weight:700;font-family:var(--mincho);margin-bottom:4px">' + title + '</div>' +
+      '<div style="font-size:13px;line-height:1.9;color:var(--ink-sub,#5d5b4f)">' + body + '</div></div>';
+  }
+
+  /* 5つの画面の関係。ふだんは畳んでおく */
+  function howItWorks_() {
+    return '<details class="card" style="margin-top:18px">' +
+      '<summary style="cursor:pointer;padding:13px 15px;font-weight:700">' +
+      'この5つの画面は、どう繋がっているか</summary>' +
+      '<div class="card-pad" style="padding-top:0;font-size:13px;line-height:1.95;color:var(--ink-sub,#5d5b4f)">' +
+      '<p style="margin:0 0 6px"><b>今月やること</b>（この画面）… 今月は何をする月か。' +
+      '小田原の暖地を基準に、作物137種の中から今月ぶんを出しています。' +
+      '<b>あなたの登録とは関係なく、全部出ます</b>。</p>' +
+      '<p style="margin:0 0 6px"><b>作付け</b> … 何を作るか<b>決める場</b>。選ぶと「畑プラン」に入り、' +
+      '一緒に植えていい組み合わせかを診ます。選んだだけでは記録にはなりません。</p>' +
+      '<p style="margin:0 0 6px"><b>マイ畑</b> … 実際にうちの畑で何がどうなっているかの<b>記録</b>。' +
+      'ここだけが現実です。</p>' +
+      '<p style="margin:0 0 6px"><b>年間計画</b> … 畝ごと（①L3 など）の一年の段取り。' +
+      '上の3つとは別のデータを見ています。</p>' +
+      '<p style="margin:0 0 12px"><b>ノウハウ</b> … 作物ごとの詳しい記事。</p>' +
+      '<div style="font-weight:700;color:var(--ink,#2f2e28);margin-bottom:4px">ふだんの流れ</div>' +
+      '<div>① 作付けで、作りたいものを選ぶ<br>' +
+      '② マイ畑の「畑プランを選択に入れる」で取り込み、<b>予定</b>として登録する<br>' +
+      '③ まき時が来た予定は、マイ畑の<b>「🔔 いま出番」に自動で上がる</b>（下から探さなくていい）<br>' +
+      '④ 実際にまいたら、その場のボタンを押す。日付は今日で入る<br>' +
+      '⑤ 育てているものは、この画面の「マイ畑のようす」にも出る</div>' +
+      '<p style="margin:12px 0 0">記録はこの端末の中だけに保存されます（サーバーには送られません）。</p>' +
+      '</div></details>';
+  }
+
   function viewMonth() {
     var m = S.soilMonth;
     var key = 'shizen-soil-' + now.getFullYear() + '-' + m;
@@ -271,6 +304,9 @@
     var list = SOIL[m] || [];
 
     var h = '<section class="sec">';
+    h += explain_('今月やること — 今月の目安',
+      'いま何をする月かを、作物137種の一般データから出しています。'
+      + '<b>登録に関係なく全部出ます</b>ので、うちの畑の話は下の「マイ畑のようす」を見てください。');
     h += '<div class="card soil"><div class="soil-head"><h2>' + m + '月の土づくり</h2>' +
       '<div class="soil-nav"><button data-soil="-1" aria-label="前の月">‹</button>' +
       '<button data-soil="1" aria-label="次の月">›</button></div></div>';
@@ -317,6 +353,7 @@
     }
     h += '</section>';
 
+    h += howItWorks_();
     h += '<div class="foot">月・適期は小田原（暖地）の目安です。品種・その年の天候・畑の状態で前後します。</div>';
     return h;
   }
@@ -340,7 +377,12 @@
 
   /* ───────── タブ2：作付けシミュレーター ───────── */
   function viewPlan() {
-    var h = '<div class="filters">';
+    var h = explain_('作付け — 何を作るか決める',
+      '月と条件でしぼって、作りたいものを選びます。選んだものは<b>畑プラン</b>に入り、'
+      + '一番下で相性（◎ 一緒に植えると良い／⚠ 同じ科で連作注意）を診ます。'
+      + '<b>ここで選んだだけでは記録になりません。</b>「マイ畑」タブの'
+      + '「畑プランを選択に入れる」で取り込むと、記録が始まります。');
+    h += '<div class="filters">';
     h += '<div class="row" id="modeRow">' +
       '<button class="pill' + (S.pMode === 'sow' ? ' on' : '') + '" data-mode="sow">まく・植える</button>' +
       '<button class="pill' + (S.pMode === 'har' ? ' on' : '') + '" data-mode="har">収穫</button>' +
@@ -568,7 +610,13 @@
 
   /* ───────── タブ3：マイ畑 ───────── */
   function viewMine() {
-    var h = '<div class="card picker"><div style="font-family:var(--mincho);font-weight:700;font-size:16px;color:var(--green)">いま育てているものを記録</div>';
+    var h = explain_('マイ畑 — うちの畑の記録',
+      'いま実際に何がどうなっているかを記録する画面です。'
+      + '<b>予定 → 発芽処理 → 種をまいた／苗を買った → 畑に植えた</b> と進めます。'
+      + 'これから作るものも<b>予定</b>で入れておけば、'
+      + 'まき時が来た月に<b>「🔔 いま出番」へ自動で上がる</b>ので、'
+      + '長い一覧から探す必要はありません。');
+    h += '<div class="card picker"><div style="font-family:var(--mincho);font-weight:700;font-size:16px;color:var(--green)">いま育てているものを記録</div>';
     h += '<div class="lead" style="margin:7px 0 0">一覧からタップで選んで（<b>複数OK</b>）、日付を決めて、まとめて加えます。</div>';
     h += '<input class="search" id="mq" type="search" placeholder="作物名で絞り込み（ひらがなでもOK）" value="' + esc(S.mQ) + '" style="margin-top:10px">';
     h += '<div id="mPickBox" class="mpickbox"></div>';
