@@ -12,6 +12,10 @@
   var SLIFE = window.SEED_LIFE || {};
   var ALIAS = window.ALIAS || {};
 
+  /* 朝のLINE（畑Bot）と繋ぐ設定。data/sync.js で入れる。空なら何もしない */
+  var SYNC = window.HTK_SYNC || {};
+  var syncOn = !!(SYNC.url && SYNC.token);
+
   /* 検索用：ひらがな→カタカナ、全角英数→半角、小文字化 */
   function norm(s) {
     return String(s)
@@ -101,6 +105,7 @@
     mSel: [],
     mQ: '',
     mineQ: '',
+    syncMsg: '',
     mField: load('shizen-mfield', 'iizumi'),
     mStage: 'field',
     notes: null,
@@ -673,6 +678,24 @@
     h += '<button class="go" id="sAdd">在庫箱に入れる</button></div>';
     h += '<div id="seedList"></div></section>';
 
+    /* ── 朝のLINEに何が届くか ── */
+    h += '<section class="sec" style="margin-top:26px"><div class="sec-head"><h2>朝のLINEに何が届くか</h2></div>';
+    h += '<div class="card card-pad" style="font-size:13px;line-height:1.95;color:var(--ink-sub)">' +
+      '毎朝7時、<b>畑Bot</b>が<b>期限の近いものだけ</b>を送ります' +
+      '（月曜は14日先まで、平日は3日前から。何も無い日は黙ります）。' +
+      'マイ畑に登録したものは、同じ話が二重に届かないよう、こう整理されます。' +
+      '<div style="margin-top:8px">' +
+      '・<b>もう着手した</b>もの … その期限の行は出ません（済んだこと）<br>' +
+      '・<b>予定</b>で入れてあるもの … 行の後ろに「📌 マイ畑に予定あり」が付きます<br>' +
+      '・期限表に無いが<b>予定のまき時が来た</b>もの … 「マイ畑から」として足されます<br>' +
+      '・育てているもので<b>今月が穫れる月</b>のもの … 「そろそろ穫れます」が足されます' +
+      '</div>' +
+      '<div style="margin-top:10px;color:var(--ink-sub2)">' +
+      '※ 去年の記録を「済んだ」と取り違えないよう、着手済みとみなすのは' +
+      'その期限の60日前より後に始めたものだけです。</div>' +
+      '<div id="syncState" style="margin-top:10px"></div>' +
+      '</div></section>';
+
     /* ── LINE畑日誌 ── */
     h += '<section class="sec" style="margin-top:26px"><div class="sec-head"><h2>LINE畑日誌</h2></div>';
     h += '<div class="card card-pad" style="font-size:13px;line-height:1.9;color:var(--ink-sub)">' +
@@ -925,6 +948,98 @@
       (note ? '<div class="lead" style="margin:0 0 8px">' + note + '</div>' : '');
   }
 
+  /* ───────── 朝のLINEと繋ぐ（マイ畑を畑Botに預ける） ─────────
+     ・記録が変わったら、少し待ってからまとめて送る
+     ・畑BotがLINEで進めた工程は、送った返事に混ぜて返ってくる
+     ・繋いでいなくても、アプリは今までどおり端末の中だけで動く            */
+  var syncBusy = false, syncTimer = null;
+
+  function hhmm_() {
+    var d = new Date();
+    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+
+  /* 送る形。まける月・穫れる月も一緒に渡す（畑Bot側は作物表を持たないため） */
+  function mineForSync_() {
+    return S.mine.map(function (e) {
+      var c = cropById(e.id);
+      return {
+        uid: e.uid, id: e.id, name: mineName_(e), stage: mineStage_(e),
+        dates: mineDates_(e), field: e.field || '',
+        sow: c ? c.sow : [], harvest: c ? c.harvest : [],
+        t: Number(e.t) || 0
+      };
+    });
+  }
+
+  /* 畑Bot側が進めていた工程を、こちらに取り込む */
+  function applyServerMine_(list) {
+    var by = {};
+    (list || []).forEach(function (e) { by[e.uid] = e; });
+    var changed = false;
+    S.mine.forEach(function (e) {
+      var sv = by[e.uid];
+      if (!sv || (Number(sv.t) || 0) <= (Number(e.t) || 0)) return;
+      e.stage = sv.stage; e.dates = sv.dates; e.t = sv.t;
+      if (sv.dates && sv.dates.field) e.planted = sv.dates.field;
+      changed = true;
+    });
+    if (changed) { save('shizen-mine', S.mine); paintMine(); }
+  }
+
+  function syncPush() {
+    if (!syncOn || syncBusy) return;
+    syncBusy = true;
+    S.syncMsg = '送っています…'; paintSyncState();
+    fetch(SYNC.url + '?action=minesave&token=' + encodeURIComponent(SYNC.token), {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },  /* 事前問い合わせを起こさせない */
+      body: JSON.stringify({ mine: mineForSync_() })
+    }).then(function (r) { return r.json(); })
+      .then(function (j) {
+        syncBusy = false;
+        if (!j || !j.ok) {
+          S.syncMsg = '断られました（' + ((j && j.error) || '理由不明') + '）。data/sync.js のトークンを確かめてください。';
+        } else {
+          applyServerMine_(j.mine);
+          S.syncMsg = hhmm_() + ' に預けました。';
+        }
+        paintSyncState();
+      })
+      .catch(function () {
+        syncBusy = false;
+        S.syncMsg = '送れませんでした。次に開いたときにもう一度試します。';
+        paintSyncState();
+      });
+  }
+
+  function syncSoon() {
+    if (!syncOn) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(syncPush, 1500);
+  }
+
+  /* マイ畑を保存する唯一の入口。変えた記録に更新時刻を打ってから預ける */
+  function saveMine_(uid) {
+    var t = Date.now();
+    for (var i = 0; i < S.mine.length; i++) {
+      if (uid ? S.mine[i].uid === uid : !S.mine[i].t) S.mine[i].t = t;
+    }
+    save('shizen-mine', S.mine);
+    syncSoon();
+  }
+
+  function paintSyncState() {
+    var el = document.getElementById('syncState');
+    if (!el) return;
+    if (!syncOn) {
+      el.innerHTML = '<b>いまは畑Botと繋がっていません。</b>マイ畑はこの端末の中だけにあります。' +
+        '繋ぐと、朝のLINEが上のように整理され、記録の控えも畑Botに残ります。';
+      return;
+    }
+    el.innerHTML = '<b>畑Botに預けています。</b>' + esc(S.syncMsg || '（まだ送っていません）');
+  }
+
   function paintMine() {
     var box = document.getElementById('mineList');
     if (!box) return;
@@ -1038,7 +1153,7 @@
   function render(keepScroll) {
     if (S.tab === 'month') app.innerHTML = viewMonth();
     else if (S.tab === 'plan') { app.innerHTML = viewPlan(); paintPlanBox(); paintList(); }
-    else if (S.tab === 'mine') { app.innerHTML = viewMine(); paintMinePicker(); paintMine(); paintSeeds(); }
+    else if (S.tab === 'mine') { app.innerHTML = viewMine(); paintMinePicker(); paintMine(); paintSeeds(); paintSyncState(); }
     else if (S.tab === 'notes') {
       app.innerHTML = viewNotes();
       if (S.note) loadNote(S.note);
@@ -1086,7 +1201,7 @@
         if (S.mine[i].uid === uid) {
           S.mine[i].checks = S.mine[i].checks || {};
           if (t.checked) S.mine[i].checks[idx] = true; else delete S.mine[i].checks[idx];
-          save('shizen-mine', S.mine);
+          saveMine_(uid);
           var card = t.closest('.mine'), g = growById(S.mine[i].id);
           if (card && g) {
             var d = 0; for (var kk in S.mine[i].checks) if (S.mine[i].checks[kk]) d++;
@@ -1221,11 +1336,11 @@
         S.mine.push({
           uid: Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36),
           id: id3, planted: dt.value, stage: stg, dates: dts,
-          field: S.mField, checks: {}
+          field: S.mField, checks: {}, t: Date.now()
         });
       });
       S.mSel = [];
-      save('shizen-mine', S.mine); paintMinePicker(); paintMine();
+      saveMine_(); paintMinePicker(); paintMine();
       var ml = document.getElementById('mineList');
       if (ml) ml.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
@@ -1241,7 +1356,7 @@
         te.stage = toSt;
         break;
       }
-      save('shizen-mine', S.mine); paintMine(); return;
+      saveMine_(tuid); paintMine(); return;
     }
     /* マイ畑：工程をひとつ戻す（間違えたときの取り消し） */
     if ((el = t.closest('[data-stback]'))) {
@@ -1257,7 +1372,7 @@
         be.planted = be.dates.field || be.dates.bought || be.dates.sow || be.dates.prep || be.planted;
         break;
       }
-      save('shizen-mine', S.mine); paintMine(); return;
+      saveMine_(buid); paintMine(); return;
     }
     /* マイ畑：次の工程へ進める（発芽処理→育苗→畑） */
     if ((el = t.closest('[data-advance]'))) {
@@ -1273,7 +1388,7 @@
         if (nxt === 'field') ee.planted = ee.dates.field;   // 旧形式との互換を保つ
         break;
       }
-      save('shizen-mine', S.mine); paintMine(); return;
+      saveMine_(auid); paintMine(); return;
     }
     /* 種の在庫箱 追加 */
     if (t.id === 'sAdd') {
@@ -1300,7 +1415,7 @@
       for (var m = 0; m < S.mine.length; m++) if (S.mine[m].uid === duid) g2 = growById(S.mine[m].id);
       if (!window.confirm((g2 ? g2.name + 'の' : '') + '記録を削除します。よろしいですか？')) return;
       S.mine = S.mine.filter(function (x) { return x.uid !== duid; });
-      save('shizen-mine', S.mine); paintMine(); return;
+      saveMine_(); paintMine(); return;
     }
     /* ノウハウ */
     if ((el = t.closest('[data-note]'))) {
@@ -1312,6 +1427,7 @@
   });
 
   render();
+  if (syncOn) syncPush();   /* 起動時に一度：預けて、畑Bot側の進みを受け取る */
 
   /* Service Worker（オフライン用）
      新しい版が入ったら1回だけ自動で読み直す。
