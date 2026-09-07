@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ゴッドシール診断 | 遺伝子デザイン研究所</title>
+<meta name="description" content="生年月日と生まれた時間から、あなたの魂の刻印を読み解く「ゴッドシール診断」。MARIA（魂のシナリオ）とFACE（冒険の物語）を、その場で結果まで表示します。">
+<meta property="og:title" content="ゴッドシール診断">
+<meta property="og:description" content="生年月日と生まれた時間から、あなたの魂の刻印を読み解く。">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;800&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#f3ecdd;
+  --ink-dim:#b6ac97;
+  --ink-faint:#7d7566;
+  --bg:#08090f;
+  --bg2:#0e1120;
+  --panel:rgba(255,255,255,.045);
+  --line:rgba(212,175,55,.28);
+  --gold:#d9b65a;
+  --gold-hi:#f4dea1;
+  --gold-deep:#8a6d22;
+  --rose:#c98fa6;
+  --serif:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
+  --sans:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,"Noto Sans JP",system-ui,sans-serif;
+  --lat:"Cormorant Garamond",Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  line-height:1.9;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* ---- 背景（星と光） ---- */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(900px 620px at 50% -12%, rgba(217,182,90,.20), transparent 62%),
+    radial-gradient(700px 520px at 88% 108%, rgba(120,86,190,.20), transparent 66%),
+    radial-gradient(620px 480px at 6% 78%, rgba(60,120,150,.16), transparent 68%),
+    linear-gradient(180deg,#08090f 0%,#0e1120 48%,#08090f 100%);
+}
+.stars{position:absolute;inset:0;opacity:.55}
+.stars i{
+  position:absolute;width:2px;height:2px;border-radius:50%;
+  background:#fff;opacity:.5;animation:tw 4s ease-in-out infinite;
+}
+@keyframes tw{0%,100%{opacity:.14;transform:scale(.8)}50%{opacity:.85;transform:scale(1.25)}}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 20px 96px}
+
+/* ---- 共通パーツ ---- */
+.screen{display:none;animation:rise .55s cubic-bezier(.22,.9,.3,1) both}
+.screen.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:30px 26px;
+  backdrop-filter:blur(8px);
+  position:relative;
+}
+.card + .card{margin-top:18px}
+.eyebrow{
+  font-family:var(--lat);letter-spacing:.42em;text-transform:uppercase;
+  font-size:11px;color:var(--gold);margin:0 0 10px;
+}
+h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.5;margin:0}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:26px 0}
+.dim{color:var(--ink-dim)}
+.small{font-size:12.5px;line-height:1.85}
+
+button,.btn{font-family:var(--sans);cursor:pointer}
+.btn-main{
+  display:block;width:100%;padding:17px 20px;margin-top:22px;
+  background:linear-gradient(135deg,#e6cd82,#c9a34a 55%,#a8842f);
+  color:#171207;border:none;border-radius:3px;
+  font-size:16px;font-weight:700;letter-spacing:.14em;
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+  box-shadow:0 10px 30px -14px rgba(217,182,90,.75);
+}
+.btn-main:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.07);box-shadow:0 16px 38px -14px rgba(217,182,90,.9)}
+.btn-main:disabled{opacity:.32;cursor:not-allowed;box-shadow:none}
+.btn-ghost{
+  padding:12px 18px;background:transparent;color:var(--ink-dim);
+  border:1px solid var(--line);border-radius:3px;font-size:13.5px;letter-spacing:.1em;
+  transition:color .18s,border-color .18s,background .18s;
+}
+.btn-ghost:hover{color:var(--gold-hi);border-color:var(--gold);background:rgba(217,182,90,.07)}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.btn-row .btn-ghost{flex:1 1 150px}
+
+/* ---- 表紙 ---- */
+.hero{text-align:center;padding:74px 0 10px}
+.seal{width:132px;height:132px;margin:0 auto 26px;display:block;animation:spin 44s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero h1{font-size:clamp(30px,7.6vw,44px);letter-spacing:.2em;margin:0 0 4px}
+.hero .btn-main{max-width:420px;margin-left:auto;margin-right:auto}
+.hero .en{font-family:var(--lat);letter-spacing:.52em;font-size:12px;color:var(--gold);margin:0 0 26px;padding-left:.52em}
+.lead{color:var(--ink-dim);font-size:14.5px;max-width:31em;margin:0 auto}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:30px}
+.pillar{border:1px solid var(--line);border-radius:3px;padding:16px 8px;text-align:center;background:rgba(255,255,255,.02)}
+.pillar b{display:block;font-family:var(--serif);font-size:15px;color:var(--gold-hi);letter-spacing:.08em}
+.pillar span{font-size:11px;color:var(--ink-dim);letter-spacing:.06em}
+
+/* ---- 入力 ---- */
+label.f{display:block;font-size:12.5px;letter-spacing:.16em;color:var(--gold);margin:22px 0 8px}
+label.f:first-of-type{margin-top:0}
+input[type=text],input[type=date],input[type=time],select{
+  width:100%;padding:14px 14px;background:rgba(0,0,0,.34);
+  border:1px solid rgba(212,175,55,.34);border-radius:3px;
+  color:var(--ink);font-size:16px;font-family:var(--sans);
+}
+input:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(217,182,90,.13)}
+input[type=date],input[type=time]{color-scheme:dark}
+.dob{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.check{display:flex;align-items:center;gap:9px;margin-top:11px;font-size:13px;color:var(--ink-dim);cursor:pointer}
+.check input{width:17px;height:17px;accent-color:var(--gold)}
+.err{color:#e79a9a;font-size:13px;margin-top:14px;min-height:1.2em}
+
+/* ---- 設問 ---- */
+.prog{height:2px;background:rgba(255,255,255,.09);border-radius:2px;overflow:hidden;margin-bottom:8px}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold-deep),var(--gold-hi));transition:width .45s cubic-bezier(.22,.9,.3,1)}
+.qmeta{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.22em;color:var(--ink-dim);margin-bottom:26px;font-family:var(--lat)}
+.qtext{font-family:var(--serif);font-size:clamp(19px,4.6vw,23px);line-height:1.7;margin-bottom:24px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{
+  text-align:left;padding:16px 18px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.10);border-radius:3px;
+  color:var(--ink);font-size:15px;line-height:1.65;
+  transition:all .18s ease;position:relative;padding-left:46px;
+}
+.opt::before{
+  content:"";position:absolute;left:18px;top:50%;transform:translateY(-50%);
+  width:9px;height:9px;border:1px solid var(--ink-dim);border-radius:50%;transition:all .18s;
+}
+.opt:hover{border-color:var(--gold);background:rgba(217,182,90,.09);transform:translateX(4px)}
+.opt:hover::before{border-color:var(--gold);background:var(--gold);box-shadow:0 0 12px var(--gold)}
+.backlink{margin-top:22px;font-size:12.5px;color:var(--ink-dim);background:none;border:none;padding:0;letter-spacing:.1em}
+.backlink:hover{color:var(--gold-hi)}
+
+/* ---- 計算中 ---- */
+#screen-calc{text-align:center;padding:96px 0}
+.orb{width:140px;height:140px;margin:0 auto 34px;position:relative}
+.orb i{position:absolute;inset:0;border:1px solid var(--line);border-radius:50%;animation:pulse 2.6s ease-in-out infinite}
+.orb i:nth-child(2){inset:16px;animation-delay:.35s;border-color:rgba(201,143,166,.3)}
+.orb i:nth-child(3){inset:32px;animation-delay:.7s}
+.orb i:nth-child(4){inset:48px;animation-delay:1.05s;border-color:rgba(201,143,166,.3)}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}
+#calcText{font-family:var(--serif);letter-spacing:.24em;color:var(--gold-hi);font-size:15px}
+
+/* ---- 結果 ---- */
+.res-head{text-align:center;padding:52px 0 6px}
+.res-head .name{font-size:13px;letter-spacing:.3em;color:var(--ink-dim);margin-bottom:14px}
+.core{
+  font-family:var(--lat);font-size:clamp(76px,22vw,120px);line-height:.9;font-weight:300;
+  background:linear-gradient(160deg,var(--gold-hi),var(--gold) 42%,var(--gold-deep));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 30px rgba(217,182,90,.3));
+}
+.core-lbl{font-family:var(--lat);letter-spacing:.42em;font-size:11px;color:var(--gold);margin-top:2px;padding-left:.42em}
+.type{font-family:var(--serif);font-size:clamp(24px,6.4vw,34px);letter-spacing:.12em;margin:18px 0 6px}
+.type-en{font-family:var(--lat);letter-spacing:.34em;font-size:12px;color:var(--ink-dim);padding-left:.34em}
+.catch{
+  font-family:var(--serif);font-size:16.5px;color:var(--gold-hi);margin-top:20px;
+  padding:16px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+}
+.sec-title{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.sec-title .n{font-family:var(--lat);font-size:12px;letter-spacing:.28em;color:var(--gold)}
+.sec-title h2{font-size:19px;letter-spacing:.14em}
+.sec-title::after{content:"";flex:1;height:1px;background:var(--line)}
+.body-txt{font-size:14.7px;color:var(--ink);white-space:pre-line}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;font-size:14px;margin-top:6px}
+.kv dt{color:var(--gold);white-space:nowrap;font-size:12.5px;letter-spacing:.1em}
+.kv dd{margin:0;color:var(--ink)}
+ul.pts{list-style:none;padding:0;margin:0}
+ul.pts li{position:relative;padding-left:24px;margin-bottom:9px;font-size:14.5px}
+ul.pts li::before{content:"";position:absolute;left:4px;top:.82em;width:8px;height:8px;border:1px solid var(--gold);transform:rotate(45deg)}
+ul.pts.warn li::before{border-color:var(--rose)}
+.chart{display:block;width:100%;max-width:340px;margin:4px auto 18px}
+.axis-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px 16px;font-size:13px}
+.axis-list div{display:flex;justify-content:space-between;border-bottom:1px dotted rgba(255,255,255,.12);padding:5px 0}
+.axis-list b{color:var(--gold-hi);font-family:var(--lat);font-size:15px}
+.hex{
+  display:flex;gap:20px;align-items:center;flex-wrap:wrap;
+  padding:18px;border:1px solid var(--line);border-radius:3px;background:rgba(0,0,0,.24)
+}
+.hex .lines{display:flex;flex-direction:column-reverse;gap:6px;flex:0 0 76px}
+.hex .lines span{display:block;height:8px;background:var(--gold);border-radius:1px}
+.hex .lines span.yin{background:none;display:flex;justify-content:space-between}
+.hex .lines span.yin::before,.hex .lines span.yin::after{content:"";width:44%;height:8px;background:var(--gold);border-radius:1px}
+.hex .meta{flex:1 1 180px}
+.hex .meta b{display:block;font-family:var(--serif);font-size:19px;letter-spacing:.1em;color:var(--gold-hi)}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.badge{
+  font-size:11.5px;letter-spacing:.14em;padding:6px 12px;border-radius:99px;
+  border:1px solid var(--line);color:var(--gold);background:rgba(217,182,90,.07)
+}
+.advice{border-left:2px solid var(--gold);padding:4px 0 4px 18px;font-size:14.7px;white-space:pre-line}
+.cta{
+  text-align:center;padding:30px 24px;border:1px solid var(--line);border-radius:3px;
+  background:linear-gradient(180deg,rgba(217,182,90,.10),rgba(217,182,90,.02));margin-top:18px
+}
+.cta h3{font-size:18px;letter-spacing:.12em;margin-bottom:10px}
+.cta a{
+  display:inline-block;margin-top:16px;padding:14px 34px;
+  background:linear-gradient(135deg,#e6cd82,#c9a34a 55%,#a8842f);color:#171207;
+  text-decoration:none;border-radius:3px;font-weight:700;letter-spacing:.14em;font-size:14.5px
+}
+footer{text-align:center;color:var(--ink-dim);font-size:11.5px;line-height:2;margin-top:52px;opacity:.7}
+footer a{color:var(--gold);text-decoration:none}
+.toast{
+  position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);z-index:9;
+  background:rgba(20,18,10,.96);border:1px solid var(--gold);color:var(--gold-hi);
+  padding:12px 22px;border-radius:3px;font-size:13px;letter-spacing:.1em;
+  opacity:0;pointer-events:none;transition:all .3s ease
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media print{
+  body{background:#fff;color:#111}
+  .bg,.btn-row,.cta,.btn-main,.toast{display:none!important}
+  .card{border-color:#ccc;background:#fff;backdrop-filter:none;break-inside:avoid}
+  .core{color:#8a6d22;-webkit-text-fill-color:#8a6d22;filter:none}
+  .catch,.dim,.body-txt,.axis-list,.type-en{color:#333}
+  .sec-title h2,.hex .meta b{color:#111}
+}
+</style>
+</head>
+<body>
+<div class="bg"><div class="stars" id="stars"></div></div>
+<div class="wrap">
+
+<!-- ============ 表紙 ============ -->
+<section id="screen-intro" class="screen on">
+  <div class="hero">
+    <svg class="seal" viewBox="0 0 200 200" aria-hidden="true">
+      <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f4dea1"/><stop offset="55%" stop-color="#c9a34a"/><stop offset="100%" stop-color="#6d5418"/>
+      </linearGradient></defs>
+      <circle cx="100" cy="100" r="94" fill="none" stroke="url(#g1)" stroke-width="1"/>
+      <circle cx="100" cy="100" r="74" fill="none" stroke="url(#g1)" stroke-width=".6" stroke-dasharray="2 6"/>
+      <circle cx="100" cy="100" r="46" fill="none" stroke="url(#g1)" stroke-width=".8"/>
+      <g stroke="url(#g1)" stroke-width=".8" fill="none">
+        <polygon points="100,22 168,139 32,139"/>
+        <polygon points="100,178 32,61 168,61"/>
+      </g>
+      <circle cx="100" cy="100" r="7" fill="url(#g1)"/>
+    </svg>
+    <h1>ゴッドシール診断</h1>
+    <p class="en">GOD SEAL</p>
+    <p class="lead">
+      あなたが地球に生まれた「日」と「時間」に、魂の刻印は記されています。<br>
+      易経・カバラ・占星術の叡智で、その設計図を読み解きます。
+    </p>
+    <div class="pillars">
+      <div class="pillar"><b>易経</b><span>64卦</span></div>
+      <div class="pillar"><b>カバラ</b><span>数秘</span></div>
+      <div class="pillar"><b>占星術</b><span>12サイン</span></div>
+    </div>
+    <button class="btn-main" id="btnStart">診断をはじめる</button>
+    <p class="small dim" style="margin-top:16px">所要時間 約2分／登録不要・その場で結果表示</p>
+  </div>
+</section>
+
+<!-- ============ 入力 ============ -->
+<section id="screen-form" class="screen">
+  <div class="card">
+    <p class="eyebrow">Step 1 — Birth Data</p>
+    <h2 style="font-size:21px;letter-spacing:.1em;margin-bottom:8px">生まれた瞬間を教えてください</h2>
+    <p class="small dim" style="margin-bottom:26px">入力された情報はこの端末の中だけで計算され、どこにも送信されません。</p>
+
+    <label class="f" for="fName">お名前（任意）</label>
+    <input type="text" id="fName" placeholder="例：さえり" autocomplete="off" maxlength="20">
+
+    <label class="f">生年月日</label>
+    <div class="dob">
+      <select id="fY"></select>
+      <select id="fM"></select>
+      <select id="fD"></select>
+    </div>
+
+    <label class="f" for="fT">生まれた時間</label>
+    <input type="time" id="fT" value="12:00">
+    <label class="check"><input type="checkbox" id="fNoTime"> 生まれた時間がわからない</label>
+
+    <p class="err" id="formErr"></p>
+    <button class="btn-main" id="btnToQuiz">次へ進む</button>
+    <button class="backlink" id="btnBackIntro">← もどる</button>
+  </div>
+</section>
+
+<!-- ============ 設問 ============ -->
+<section id="screen-quiz" class="screen">
+  <div class="card">
+    <div class="prog"><i id="progBar"></i></div>
+    <div class="qmeta"><span id="qNum">Q1</span><span id="qTot"></span></div>
+    <p class="qtext" id="qText"></p>
+    <div class="opts" id="qOpts"></div>
+    <button class="backlink" id="btnQBack">← ひとつ前へ</button>
+  </div>
+</section>
+
+<!-- ============ 計算中 ============ -->
+<section id="screen-calc" class="screen">
+  <div class="orb"><i></i><i></i><i></i><i></i></div>
+  <p id="calcText">魂の刻印を読み取っています</p>
+</section>
+
+<!-- ============ 結果 ============ -->
+<section id="screen-result" class="screen">
+  <div class="res-head">
+    <p class="name" id="rName"></p>
+    <div class="core" id="rCore">1</div>
+    <p class="core-lbl">CORE NUMBER</p>
+    <h1 class="type" id="rType"></h1>
+    <p class="type-en" id="rTypeEn"></p>
+    <p class="catch" id="rCatch"></p>
+    <div class="badges" style="justify-content:center;margin-top:18px" id="rBadges"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="n">Ⅰ</span><h2>MARIA ― 魂のシナリオ</h2></div>
+    <p class="body-txt" id="rMaria"></p>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="n">Ⅱ</span><h2>FACE ― 冒険の物語</h2></div>
+    <p class="body-txt" id="rFace"></p>
+    <div class="rule"></div>
+    <dl class="kv" id="rFaceKv"></dl>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="n">Ⅲ</span><h2>エネルギーバランス</h2></div>
+    <svg class="chart" id="rChart" viewBox="0 0 300 300" role="img" aria-label="エネルギーバランスの図"></svg>
+    <div class="axis-list" id="rAxis"></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="n">Ⅳ</span><h2>いまのあなたの卦</h2></div>
+    <div class="hex">
+      <div class="lines" id="rHexLines"></div>
+      <div class="meta">
+        <b id="rHexName"></b>
+        <span class="small dim" id="rHexNo"></span>
+        <p class="small" style="margin:8px 0 0" id="rHexKey"></p>
+      </div>
+    </div>
+    <p class="body-txt" style="margin-top:18px" id="rHexBody"></p>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="n">Ⅴ</span><h2>才能と落とし穴</h2></div>
+    <p class="eyebrow">開いている扉</p>
+    <ul class="pts" id="rStrong"></ul>
+    <div class="rule"></div>
+    <p class="eyebrow" style="color:var(--rose)">閉じやすい扉</p>
+    <ul class="pts warn" id="rWeak"></ul>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><span class="n">Ⅵ</span><h2 id="rThemeTitle">いまのテーマへの処方箋</h2></div>
+    <p class="advice" id="rAdvice"></p>
+    <div class="rule"></div>
+    <dl class="kv" id="rKeys"></dl>
+  </div>
+
+  <div class="cta">
+    <h3>もっと深く、あなたの設計図を</h3>
+    <p class="small dim">この診断は公開されている古典ロジックによる簡易版です。<br>正式なゴッドシールの読み解きは、遺伝子デザイン研究所へ。</p>
+    <a href="https://www.dnadesignlabo.com/" target="_blank" rel="noopener">公式サイトを見る</a>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-ghost" id="btnCopy">結果をコピー</button>
+    <button class="btn-ghost" id="btnShare">リンクを共有</button>
+    <button class="btn-ghost" id="btnPrint">印刷 / PDF保存</button>
+    <button class="btn-ghost" id="btnAgain">もう一度診断する</button>
+  </div>
+</section>
+
+<footer>
+  <p>ゴッドシール診断 ｜ <a href="https://www.dnadesignlabo.com/" target="_blank" rel="noopener">遺伝子デザイン研究所</a></p>
+  <p class="small">※本アプリの判定は、易経64卦・カバラ数秘・西洋占星術という公開された古典体系に基づくオリジナル実装です。<br>医療・法律・投資などの専門的判断の代わりになるものではありません。</p>
+</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   ゴッドシール診断 — 判定データ
+   ---------------------------------------------------------------------
+   このブロックのデータを差し替えるだけで、診断の中身を入れ替えられます。
+   ロジック本体（下部の ENGINE）は触らなくて構いません。
+   ===================================================================== */
+
+/* --- 5つのエネルギー軸 --- */
+const AXES = ["創造","直感","行動","調和","基盤"];
+
+/* --- CORE：カバラ数秘（ライフパスナンバー）による魂の型 --- */
+const CORE = {
+  1:{type:"開拓者",en:"THE PIONEER",color:"朱赤",ally:[3,5,8],vec:[7,5,9,3,6],
+    catch:"道がないなら、あなたが最初の一歩になる。",
+    maria:"あなたの魂は「まだ誰も立っていない場所に、最初の旗を立てる」ために設計されています。\n二番手として上手くやることではなく、一番手として粗くても始めることが、あなたのシナリオの中心にあります。\n迷っている時間そのものがエネルギーの漏れになるタイプなので、考え抜いてから動くより、動きながら考えるほうが結果的に早く着きます。\n「わたしが決めていい」と自分に許可を出した瞬間から、道は勝手にひらけていきます。",
+    strong:["ゼロから立ち上げる突破力","決断の速さと、それを引き受ける覚悟","周囲に「やっていいんだ」と思わせる先導力"],
+    weak:["独りで背負い込み、頼ることを負けだと感じてしまう","進みが遅い人・場に苛立ち、関係を焼き切ってしまう"],
+    key:"「先に走る」ことと「置いていかない」ことは両立できます。振り返って手を差し出す一拍が、あなたの器を何倍にもします。"},
+  2:{type:"調停者",en:"THE HARMONIZER",color:"月白",ally:[4,6,9],vec:[4,7,3,9,6],
+    catch:"あなたが間に立つと、場の温度が変わる。",
+    maria:"あなたの魂は「対立するふたつを、どちらも殺さずにつなぐ」ために設計されています。\n目立つ主役ではなく、場の空気そのものを設計する役割。あなたが一人入るだけで、こじれた話がほどけていきます。\nその繊細さは弱さではなく高精度のセンサーです。人の言葉にならない部分を受け取れることが、あなたの最大の職能です。\nただし全員の感情を引き受ける必要はありません。感じ取ることと、背負うことは別のものです。",
+    strong:["相手の本音を、言われる前に受け取る感受性","対立を和解に変える橋渡しの力","誰かの才能を静かに引き出す伴走力"],
+    weak:["自分の意見を最後まで飲み込んでしまう","相手の感情を自分のものとして抱え込み、消耗する"],
+    key:"「わたしはこうしたい」を一日ひとつ口に出すこと。それがあなたのエネルギーの栓を締め直します。"},
+  3:{type:"表現者",en:"THE CREATOR",color:"黄金",ally:[1,5,6],vec:[9,6,6,6,3],
+    catch:"あなたの言葉は、誰かの世界の色を変える。",
+    maria:"あなたの魂は「まだ形のないものに、色と言葉を与える」ために設計されています。\n楽しそうにしているだけで人が集まってくるのは、あなたが場に光を持ち込んでいるからです。それは立派な仕事です。\n完成度より、まず出すこと。あなたの創造性は、外に出して他者の反応を受け取ることで初めて磨かれていきます。\n「ちゃんとしなきゃ」と縮こまった瞬間に、あなたの一番の武器が消えることを覚えておいてください。",
+    strong:["場を明るくし、人を惹きつける表現力","抽象的なものを言葉やビジュアルに翻訳する力","楽しむことでエネルギーを増やせる回復力"],
+    weak:["興味が移りやすく、深める前に次へ行ってしまう","評価が気になると、途端に本来の色を失う"],
+    key:"「完成させる」より「人に渡す」。渡した数だけ、あなたの表現は本物になります。"},
+  4:{type:"構築者",en:"THE BUILDER",color:"深緑",ally:[2,6,8],vec:[4,3,6,5,9],
+    catch:"あなたが積んだ石は、百年先も崩れない。",
+    maria:"あなたの魂は「時間に耐えるものをつくる」ために設計されています。\n派手さより確かさ。あなたが整えた仕組みや土台の上で、他の人が安心して走ることができます。\n地味に見える積み重ねこそがあなたの魔法で、それは一朝一夕には誰にも真似できません。\n一方で、崩すべき古い型にしがみつくと、あなた自身がその石垣に閉じ込められます。定期的に「これは今も必要か」と問い直してください。",
+    strong:["継続と精度で、信頼を積み上げる力","混乱した状況を仕組みに落とし込む整理力","任されたものを最後まで守り抜く責任感"],
+    weak:["変化や例外に対して身体が固くなる","「こうあるべき」で自分と他人を縛りすぎる"],
+    key:"壊すことも建築のうち。手放した分だけ、新しい土地が手に入ります。"},
+  5:{type:"探究者",en:"THE EXPLORER",color:"群青",ally:[1,3,7],vec:[7,6,9,4,3],
+    catch:"自由でいるほど、あなたは正確になる。",
+    maria:"あなたの魂は「動きながら世界を体験し、その情報を持ち帰る」ために設計されています。\n一箇所に留まることを求められると力が落ち、環境が変わるほど本領を発揮する希少なタイプです。\n飽きっぽさは欠点ではなく、探索範囲の広さという才能の裏側です。\nただし、自由を守るために逃げるのか、可能性を掴むために動くのか——その違いだけは自分に嘘をつかないでください。",
+    strong:["未知の環境にすぐ適応する順応力","多分野の知識をつなげて価値に変える編集力","人と場を軽やかに移動しながら縁を結ぶ力"],
+    weak:["深まる直前で場所を変えてしまう","制約を感じると、話し合う前に離脱してしまう"],
+    key:"「留まる」を自分で選んだ時、自由はさらに大きくなります。縛られるのではなく、選ぶのです。"},
+  6:{type:"守護者",en:"THE GUARDIAN",color:"薔薇",ally:[2,3,9],vec:[5,5,4,9,7],
+    catch:"あなたの隣は、誰かにとっての安全地帯。",
+    maria:"あなたの魂は「大切なものを守り、育てる」ために設計されています。\n人・場・家庭・チーム——あなたが手をかけたものは、時間とともに確かに育ちます。世話をすることが、そのままあなたの祈りです。\n愛情の深さゆえに、相手の人生まで背負おうとしてしまう瞬間があります。守ることと、支配することの境目に気をつけてください。\nあなた自身を誰が守るのか。その問いに答えを持てたとき、あなたの愛は本当の意味で自由になります。",
+    strong:["人を安心させ、居場所をつくる包容力","責任を引き受け、最後まで面倒を見る誠実さ","美しさや心地よさを整えるセンス"],
+    weak:["求められていない世話まで焼いてしまう","自分の限界を超えても「NO」が言えない"],
+    key:"自分を満たすことは裏切りではありません。あなたが満ちた分しか、外へは流れていきません。"},
+  7:{type:"求道者",en:"THE SEEKER",color:"藍鼠",ally:[5,9,11],vec:[6,9,3,4,5],
+    catch:"答えより、問いの深さで生きる人。",
+    maria:"あなたの魂は「表面の下にある本質を掘り当てる」ために設計されています。\n大勢と同じ答えでは納得できず、自分で確かめるまで動けない——その慎重さこそが、あなたの信頼の源になります。\n孤独は罰ではなく、あなたにとっての作業場です。一人になる時間を確保できているかどうかで、出力の質がまるで変わります。\n掘り当てた叡智は、いつか必ず外に手渡してください。閉じたままの知恵は、あなた自身を重くします。",
+    strong:["本質を見抜く分析力と洞察の深さ","流行や空気に流されない精神の独立","静けさの中で答えを引き上げる集中力"],
+    weak:["考え続けて、行動の入り口で止まってしまう","理解されないと決めつけて、心を閉じてしまう"],
+    key:"「わからないまま動く」を一度許してみること。体験からしか手に入らない答えが、確かにあります。"},
+  8:{type:"統率者",en:"THE SOVEREIGN",color:"漆黒金",ally:[1,4,22],vec:[5,4,8,4,8],
+    catch:"あなたが本気を出すと、現実のほうが動く。",
+    maria:"あなたの魂は「力と資源を集め、大きな現実を動かす」ために設計されています。\n数字・組織・お金といった、現実世界のハンドルを握ることに罪悪感を持つ必要はありません。それはあなたの任務です。\n本気で望んだものを手に入れる力があるからこそ、「何のために」を定期的に確認する必要があります。目的を見失った力は、ただの重さになります。\n人を動かすのではなく、人が動きたくなる目的地を掲げること。そこにあなたの本当の統率力があります。",
+    strong:["目標を現実の成果に変換する実行力","人と資源を集める求心力","責任の重さに耐えるタフさ"],
+    weak:["結果で人を測り、過程にある想いを見落とす","弱さを見せられず、限界まで一人で走る"],
+    key:"「助けてほしい」と言えるリーダーが、最後にいちばん遠くまで行きます。"},
+  9:{type:"賢者",en:"THE SAGE",color:"紫紺",ally:[2,6,7],vec:[6,8,4,8,4],
+    catch:"あなたは、終わりを次の始まりに変える人。",
+    maria:"あなたの魂は「すべてを見届け、赦し、次の循環へ渡す」ために設計されています。\n人の話を聞いているだけで相手が癒えていくのは、あなたが判断を挟まずに受け取れるからです。\n広い視野を持つぶん、目の前の小さな欲を後回しにしがちですが、あなた個人の願いも、この世界の一部です。\n手放すこと・終わらせることに、あなたは他の誰よりも才能があります。その手際が、周囲の人を次の場所へ運びます。",
+    strong:["立場を超えて全体を見渡す俯瞰力","人を裁かずに受け止める包容力","終わりを丁寧に締めくくる手際"],
+    weak:["自分の欲を「わがまま」と誤解して抑え込む","悲しみや責任を一人で引き受けすぎる"],
+    key:"あなたの願いを口にすること。それは全体への裏切りではなく、全体への贈り物です。"},
+  11:{type:"伝達者",en:"THE MESSENGER",color:"白銀",ally:[2,7,22],vec:[7,10,4,6,3],
+    catch:"あなたが受け取った光は、あなたのものではない。",
+    maria:"あなたの魂は「まだ言葉になっていないものを受け取り、地上の言葉に翻訳する」ために設計されています。\n理屈より先に「わかってしまう」その感覚を、疑わないでください。根拠は、たいてい後からやってきます。\n受信力が高いぶん、他人の感情や場のノイズまで拾ってしまいます。一人の時間と、静かな場所は必需品です。\nあなたが受け取ったものは、誰かに渡されるまで完成しません。表現し、伝えることまでが、あなたの仕事です。",
+    strong:["理屈を超えて核心に触れる直感","人の可能性を先に見つけて言葉にする力","場の空気を一段引き上げる存在感"],
+    weak:["繊細さが振り切れて、消耗と回復を繰り返す","現実的な手続きや数字を後回しにしてしまう"],
+    key:"直感を「地に足のついた行動」に変換する仕組みを一つ持つこと。それだけで現実化の速度が変わります。"},
+  22:{type:"創建者",en:"THE ARCHITECT",color:"黒曜",ally:[4,8,11],vec:[8,5,7,5,10],
+    catch:"夢を、図面に落とせる人。",
+    maria:"あなたの魂は「大きなビジョンを、実際に建つ形にする」ために設計されています。\n理想を語るだけの人でも、作業をこなすだけの人でもなく、その両方をつなぐ稀な設計者です。\nスケールの大きな仕事ほど力が出るので、目の前の小さな枠に自分を押し込めていると、原因不明の停滞感に襲われます。\n完成までの時間が長いのは当たり前です。あなたが建てているものは、そもそも一年で建つ規模ではありません。",
+    strong:["長期のビジョンを具体的な工程に分解する力","現実的な制約の中で理想を実装する粘り","巻き込んだ人を一つの目的地へ束ねる力"],
+    weak:["理想の高さに自分を追い詰めてしまう","任せられずに全工程を抱え込む"],
+    key:"人に渡した仕事が7割の出来でも、全体としては前に進みます。渡す勇気が、完成を早めます。"},
+  33:{type:"愛の実践者",en:"THE LIGHT",color:"曙色",ally:[6,9,11],vec:[8,8,5,10,5],
+    catch:"教えるのではなく、生きて見せる人。",
+    maria:"あなたの魂は「愛を理念ではなく、日常の振る舞いとして体現する」ために設計されています。\n何を言うかより、あなたがどうあるかが伝わってしまうタイプです。だから、自分に無理を課した瞬間にそれも伝わります。\n多くの人を照らす力があるぶん、自分の疲れに気づくのが最後になりがちです。あなたを回復させる時間は、全員のための時間です。\n完璧な聖人である必要はありません。揺れながら、それでも人を信じ続ける姿にこそ、人は救われます。",
+    strong:["立場や損得を超えて人を大切にできる器","場全体の緊張を安心に変える力","理想を日常の行動に落とし込む一貫性"],
+    weak:["自分を後回しにし続けて、静かに燃え尽きる","「こうあるべき」の理想像で自分を裁く"],
+    key:"あなたが幸せそうにしていることが、最大の教えになります。まず自分を、いちばん丁寧に扱ってください。"}
+};
+
+/* --- FACE：太陽星座による現世の物語 --- */
+const SIGNS = [
+  {n:"牡羊座",en:"ARIES",el:"火",r:[3,21,4,19],
+   face:"あなたの物語は「まず飛び込む」ところから始まります。準備が整うのを待つより、飛び込んでから泳ぎ方を覚えるほうが速い設計です。\n感情の切り替えが早く、昨日の失敗を今日まで引きずらない回復力が、周囲を驚かせます。",
+   style:"考えるより先に身体が動く。初速で勝つ。",stage:"新規立ち上げ・最前線・勝負どころ"},
+  {n:"牡牛座",en:"TAURUS",el:"地",r:[4,20,5,20],
+   face:"あなたの物語は「自分の感覚で確かめる」ところから始まります。人の評価ではなく、触れた手触り、味、心地よさが判断基準です。\n一度決めたら動じない安定感が、周囲にとっての大きな安心になります。",
+   style:"急がず、確かなものだけを積む。五感で選ぶ。",stage:"長期育成・品質づくり・資産形成"},
+  {n:"双子座",en:"GEMINI",el:"風",r:[5,21,6,21],
+   face:"あなたの物語は「知って、つなげて、伝える」ことで展開します。異なる世界の間を軽やかに行き来し、翻訳者になれる人です。\n退屈が最大の敵で、刺激と新しい情報が入っている限り、あなたの回転は止まりません。",
+   style:"情報と人をつなぎ、軽やかに動く。",stage:"広報・企画・つなぎ役・複数プロジェクト"},
+  {n:"蟹座",en:"CANCER",el:"水",r:[6,22,7,22],
+   face:"あなたの物語は「守りたい人ができた瞬間」に動き出します。内側と外側の線引きがはっきりしていて、内側の人にはどこまでも尽くします。\n感情の記憶力が強く、それが優しさにも、古傷にもなります。",
+   style:"感情でつながり、居場所をつくる。",stage:"チームの結束・顧客との長期関係・場づくり"},
+  {n:"獅子座",en:"LEO",el:"火",r:[7,23,8,22],
+   face:"あなたの物語は「見られる場所に立つ」ことで加速します。注目を集めることは、あなたにとって自然な状態であり、責任でもあります。\n出し惜しみせず堂々と表現するほど、周囲もあなたに応えてくれます。",
+   style:"堂々と真ん中に立ち、人を照らす。",stage:"表舞台・ブランドの顔・人を鼓舞する場面"},
+  {n:"乙女座",en:"VIRGO",el:"地",r:[8,23,9,22],
+   face:"あなたの物語は「細部を整える」ことで信頼へと変わります。誰も気づかない綻びを見つけ、静かに直せるのがあなたの技術です。\n奉仕の精神が強く、役に立てている実感が最高の報酬になります。",
+   style:"分析し、改善し、確実に仕上げる。",stage:"品質管理・実務・専門技術・サポート"},
+  {n:"天秤座",en:"LIBRA",el:"風",r:[9,23,10,23],
+   face:"あなたの物語は「関係の中」で展開します。一人で完結せず、誰かと組んだときに本領が出るタイプです。\n美意識とバランス感覚が高く、あなたが整えた場は、それだけで人を落ち着かせます。",
+   style:"対話でまとめ、美しく調える。",stage:"交渉・パートナーシップ・ブランディング"},
+  {n:"蠍座",en:"SCORPIO",el:"水",r:[10,24,11,22],
+   face:"あなたの物語は「本気で関わる」ことから始まります。浅い付き合いには興味がなく、深く潜るほどエネルギーが増えます。\n一度死んで生まれ変わるような転機が人生に何度か訪れ、そのたびに強度が上がります。",
+   style:"深く潜り、本質だけを掴む。",stage:"信頼関係・研究・変革・危機の局面"},
+  {n:"射手座",en:"SAGITTARIUS",el:"火",r:[11,23,12,21],
+   face:"あなたの物語は「遠くを見る」ことで前へ進みます。目の前の細部より、地平線の向こうにある可能性に反応する設計です。\n楽観と行動力で、周囲が不可能だと思う距離を軽々と越えていきます。",
+   style:"大きく構え、遠くへ跳ぶ。",stage:"海外・教育・拡大フェーズ・新分野"},
+  {n:"山羊座",en:"CAPRICORN",el:"地",r:[12,22,1,19],
+   face:"あなたの物語は「時間を味方につける」構造です。短期の成果より、10年かけて登る山を選ぶほうが結果的に高く到達します。\n責任を引き受けるほど信頼が積み上がり、それがそのまま力になります。",
+   style:"逆算し、着実に積み上げる。",stage:"長期戦略・組織運営・専門性の確立"},
+  {n:"水瓶座",en:"AQUARIUS",el:"風",r:[1,20,2,18],
+   face:"あなたの物語は「みんなと同じでない」ことから始まります。既存の枠に違和感を覚える感性は、次の時代の設計図です。\n個人の感情より、全体にとっての最適解を見つけられる客観性があります。",
+   style:"常識を疑い、新しい仕組みを描く。",stage:"改革・コミュニティ・テクノロジー・仕組み化"},
+  {n:"魚座",en:"PISCES",el:"水",r:[2,19,3,20],
+   face:"あなたの物語は「境界を溶かす」ことで進みます。相手の気持ちに入り込める共感力が、人を深く癒します。\n現実的な線引きを持てたとき、その優しさは驚くほど大きな力に変わります。",
+   style:"感じ取り、寄り添い、包み込む。",stage:"癒し・芸術・ケア・イメージを扱う仕事"}
+];
+const ELEMENTS = {
+  "火":{desc:"衝動と情熱で動く。始めることに力がある。",vec:[1,0,2,0,0]},
+  "地":{desc:"感覚と実務で動く。続けることに力がある。",vec:[0,0,1,0,2]},
+  "風":{desc:"思考と対話で動く。つなぐことに力がある。",vec:[2,1,0,1,0]},
+  "水":{desc:"感情と共鳴で動く。深めることに力がある。",vec:[0,2,0,2,0]}
+};
+
+/* --- 易経64卦：「卦名|キーワード|爻(下→上, 1=陽 0=陰)|メッセージ」 --- */
+const HEX = [
+"乾為天|天翔ける創造|111111|迷わず動きなさい。道はまだ無く、あなたが歩いた跡が道になります。",
+"坤為地|受けとめる大地|000000|先頭に立たず、受け容れなさい。育てる側に回るとき、最大の実りが来ます。",
+"水雷屯|産みの苦しみ|100010|停滞ではなく、生まれる直前です。焦らず、助けを呼びなさい。",
+"山水蒙|学びの始まり|010001|わからないことを認めなさい。教えを乞う素直さが、次の扉を開きます。",
+"水天需|満ちるまで待つ|111010|力はもうあります。時が熟すまで、腹を据えて待ちなさい。",
+"天水訟|争いを避ける|010111|勝ち負けを求めた瞬間に失います。引く強さを選びなさい。",
+"地水師|統率と規律|010000|人を動かす局面です。私情を捨て、筋を通す者に人はついてきます。",
+"水地比|親しみ、結ぶ|000010|一人で抱えない。信頼できる人と組むことで、道が一気に開きます。",
+"風天小畜|小さく蓄える|111011|大きく動く時ではありません。今は静かに力を溜める季節です。",
+"天沢履|虎の尾を踏む|110111|危うい橋ですが、礼を尽くせば渡れます。丁寧さが身を守ります。",
+"地天泰|天地が通う|111000|流れが最も良い時。迷わず動き、繋がるべき人に繋がりなさい。",
+"天地否|塞がりの時|000111|噛み合わない時期です。無理に動かさず、内側を整えなさい。",
+"天火同人|志を共にする|101111|同じ方向を見る仲間と出会う時。心を開いて名乗りなさい。",
+"火天大有|大いに有つ|111101|豊かさが手に入る時。独占せず分け与えるほど、さらに増えます。",
+"地山謙|謙りの徳|001000|力があるほど低く出なさい。その姿勢が最強の護りになります。",
+"雷地豫|喜びの予感|000100|準備が整い、心が弾む時。喜びを表に出すことが追い風を呼びます。",
+"沢雷随|従い、随う|100110|自我を張らず、流れに随いなさい。任せることで正解に着きます。",
+"山風蠱|腐敗を正す|011001|見て見ぬふりをしてきた問題に手を入れる時です。今なら直せます。",
+"地沢臨|臨み、育てる|110000|勢いが増す時期。上から見下ろさず、共に立って育てなさい。",
+"風地観|観る、示す|000011|動くより観察する時。あなたの在り方そのものが見られています。",
+"火雷噬嗑|噛み砕く|100101|障害があります。曖昧にせず、はっきりと断ちなさい。",
+"山火賁|飾り、整える|101001|中身は既にあります。見せ方を整えることで価値が伝わります。",
+"山地剥|削ぎ落とす|000001|剥がれ落ちる時期。抗わず、必要なものだけ残しなさい。",
+"地雷復|かえる、再生|100000|底を打ちました。小さな一歩から、確実に戻ってきます。",
+"天雷無妄|作為を捨てる|100111|企まず、自然体で。裏を読むより、正直さが最短距離です。",
+"山天大畜|大きく蓄える|111001|力を溜める大きな時期。学びと備えが、後に何倍にもなります。",
+"山雷頤|養い、口を慎む|100001|何を取り入れ、何を口にするか。心と身体の食事を選び直しなさい。",
+"沢風大過|荷が勝ちすぎる|011110|重すぎる荷を背負っています。降ろす勇気が、あなたを守ります。",
+"坎為水|険しさの中|010010|困難の只中ですが、流れは止まっていません。誠実さだけが道です。",
+"離為火|明るく照らす|101101|才能が輝く時。ただし燃え尽きぬよう、依り所を持ちなさい。",
+"沢山咸|感じ合う|001110|理屈ではなく感応で繋がる時。心が動いた相手に近づきなさい。",
+"雷風恒|続ける力|011100|派手さより継続。同じことを続けることが、今の最大の武器です。",
+"天山遯|退く知恵|001111|退却は敗北ではありません。一歩引くことで態勢が整います。",
+"雷天大壮|勢い盛ん|111100|力が漲る時。ただし勢いのまま押し切ると壊れます。節度を。",
+"火地晋|進み、昇る|000101|昇進や前進の時。堂々と出て、光を受け取りなさい。",
+"地火明夷|光を隠す|101000|才能を隠すべき時期。目立たず、内側で灯を守りなさい。",
+"風火家人|内を整える|101011|外より先に、身近な関係を整えなさい。家が整えば全てが整います。",
+"火沢睽|そむき合う|110101|食い違いが起きています。違いを認めた上で、小さく歩み寄りなさい。",
+"水山蹇|進みがたし|001010|足止めの時。無理に進まず、助言者を探しなさい。",
+"雷水解|ほどける|010100|長い停滞が解ける時。動くなら早いほうが良い。",
+"山沢損|減らして得る|110001|手放すことが利益になる局面。惜しまず減らしなさい。",
+"風雷益|与えて増える|100011|与える側に回ると、想像以上に返ってきます。動くなら今です。",
+"沢天夬|決断する|111110|曖昧を終わらせる時。はっきりと決め、はっきりと告げなさい。",
+"天風姤|不意の出会い|011111|予期せぬ縁が訪れます。見極めは冷静に、心は開いて。",
+"沢地萃|集まる|000110|人が集まる時。旗を掲げれば、必要な人が寄ってきます。",
+"地風升|昇っていく|011000|階段を一段ずつ。焦らず上がれば、確実に高みに届きます。",
+"沢水困|行き詰まる|010110|苦しい局面。言葉より態度で示し、静かに耐えなさい。",
+"水風井|涸れない井戸|011010|あなたの中に汲めば湧く泉があります。手入れを怠らないこと。",
+"沢火革|革める|101110|変える時が来ました。中途半端ではなく、根本から改めなさい。",
+"火風鼎|新しい器|011101|新体制が整う時。器を新しくすれば、中身も新しくなります。",
+"震為雷|驚きの衝撃|100100|突然の出来事があります。慌てず、その振動を学びに変えなさい。",
+"艮為山|止まる|001001|動かないことが正解です。今は静止し、内を観なさい。",
+"風山漸|少しずつ進む|001011|順を追えば必ず実ります。飛び級を狙わないこと。",
+"雷沢帰妹|急いた縁|110100|焦って決めると歪みます。立場と条件を冷静に見直しなさい。",
+"雷火豊|豊かさの頂点|101100|絶頂の時。だからこそ、次の陰りへの備えを今しなさい。",
+"火山旅|旅の途上|001101|仮住まいの時期。身軽さを保ち、縁ある人に礼を尽くしなさい。",
+"巽為風|しなやかに入る|011011|正面突破より浸透を。柔らかく入り込むことで通ります。",
+"兌為沢|よろこび|110110|喜びを分かち合う時。言葉と笑顔が、そのまま運を運びます。",
+"風水渙|散らし、ひらく|010011|固まったものを散らす時。抱え込んだものを外へ流しなさい。",
+"水沢節|節度を保つ|110010|使いすぎ・言いすぎに注意。区切りを設けることで守られます。",
+"風沢中孚|まことの心|110011|技術より誠実さが効く局面。嘘のない言葉だけが届きます。",
+"雷山小過|小さく過ぎる|001100|大事を狙わず、小さなことを丁寧に。低く飛ぶのが吉です。",
+"水火既済|完成した|101010|一区切りがつきます。しかし完成の瞬間から次の乱れが始まります。",
+"火水未済|未完のまま|010101|まだ途中です。焦らず、最後のひと踏ん張りを続けなさい。"
+];
+
+/* --- 設問 --- */
+const QUIZ = [
+  {q:"いま、いちばん動かしたい領域はどこですか？",
+   o:[{t:"仕事・使命",theme:"work",v:[1,0,2,0,1]},
+      {t:"お金・豊かさ",theme:"money",v:[0,0,1,0,2]},
+      {t:"愛・パートナーシップ",theme:"love",v:[1,1,0,2,0]},
+      {t:"人間関係・居場所",theme:"relation",v:[0,1,0,2,1]},
+      {t:"自分自身・在り方",theme:"self",v:[1,2,0,1,0]}]},
+  {q:"ここ最近のあなたに、いちばん近いのは？",
+   o:[{t:"動き出したくてうずうずしている",state:"go",v:[1,0,3,0,0]},
+      {t:"迷いの霧の中にいる",state:"fog",v:[0,2,0,1,0]},
+      {t:"静かに整えている時期",state:"still",v:[0,1,0,1,2]},
+      {t:"何かを手放している最中",state:"release",v:[1,2,0,1,0]}]},
+  {q:"大きな決断をするとき、最後に頼るのは？",
+   o:[{t:"数字と根拠",v:[0,0,1,0,3]},
+      {t:"理由のない直感",v:[1,3,0,0,0]},
+      {t:"信頼している人の言葉",v:[0,1,0,3,0]},
+      {t:"その場の流れと勢い",v:[2,0,2,0,0]}]},
+  {q:"あなたのエネルギーが、いちばん満ちる時間は？",
+   o:[{t:"夜明け前の静けさ",v:[0,3,0,0,1]},
+      {t:"陽の高い昼",v:[1,0,3,0,0]},
+      {t:"夕暮れどき",v:[2,1,0,1,0]},
+      {t:"深夜",v:[3,1,0,0,0]}]},
+  {q:"いま、そっと手放したいものは？",
+   o:[{t:"誰かの期待",v:[1,1,1,0,0]},
+      {t:"過去の自分",v:[2,1,0,0,1]},
+      {t:"完璧でいようとする気持ち",v:[2,0,1,1,0]},
+      {t:"急がなければという焦り",v:[0,2,0,1,1]}]}
+];
+
+/* --- テーマ別の処方箋 --- */
+const THEMES = {
+  work:{title:"仕事・使命へのシナリオ",
+    base:"いまのあなたの仕事は「量を増やす」段階ではなく、「何を自分の名前でやるか」を決める段階に入っています。\n他人の基準で及第点を取り続けるほど、手応えは薄くなります。あなたにしか渡せない価値を一行で言えるようにすること。それが次の扉の鍵です。"},
+  money:{title:"お金・豊かさへのシナリオ",
+    base:"あなたにとってのお金は、数字である前に「エネルギーの通り道」です。入口を増やす前に、無自覚に流れ出している出口を先に閉じてください。\n受け取ることへの遠慮を一つ手放すたびに、循環の量そのものが変わります。値段をつけることは、価値を守ることです。"},
+  love:{title:"愛・パートナーシップへのシナリオ",
+    base:"相手に合わせて形を変えるほど、本当に見てほしい部分は隠れていきます。愛されるための努力を、少しだけ緩めてみてください。\nあなたが自分に許していないことは、相手にも許せません。まず自分に与えたものが、そのまま関係の温度になります。"},
+  relation:{title:"人間関係・居場所へのシナリオ",
+    base:"全員に理解される必要はありません。あなたの深さを受け取れる人は、はじめから多くないのが自然です。\n合わない場所で消耗するより、少数の本物と深く繋がること。距離を置く選択は、冷たさではなく誠実さです。"},
+  self:{title:"自分自身・在り方へのシナリオ",
+    base:"「どうすればいいか」を探し続けているうちは、答えは外にあると信じていることになります。\n本当は、もう分かっている。分かっているのに認めていないだけ——その一行を認めた瞬間から、あなたの現実は動き始めます。"}
+};
+const STATES = {
+  go:"いまのあなたは追い風の中にいます。整うのを待つ必要はありません。7割の準備で動き出したほうが、残りの3割は現場で手に入ります。",
+  fog:"見通しが立たないのは、進む方向が間違っているからではなく、視界に霧がかかっているだけです。遠くを見ようとせず、次の一歩だけを照らしてください。",
+  still:"止まって見える時期は、根を伸ばしている時期です。この静けさで整えたものが、次に動くときの推進力になります。焦って芽を引っ張らないこと。",
+  release:"いま手放しているものは、あなたを守ってきた鎧でもあります。喪失感があって当然です。空いた場所には、必ず新しいものが入ってきます。"
+};
+const AXIS_MSG = {
+  "創造":"あなたの推進力は【創造】です。新しく生み出す時間を週に一度確保するだけで、他の全ての調子が上がります。",
+  "直感":"あなたの推進力は【直感】です。最初に浮かんだ答えを信じてください。理由は後から必ず追いついてきます。",
+  "行動":"あなたの推進力は【行動】です。考えが煮詰まったら、身体を動かす側に切り替えると答えが出ます。",
+  "調和":"あなたの推進力は【調和】です。一人で決めず、信頼できる誰かに話す過程そのものが、あなたの思考を完成させます。",
+  "基盤":"あなたの推進力は【基盤】です。土台と習慣を先に整えることが、遠回りに見えていちばんの近道になります。"
+};
+
+/* =====================================================================
+   ENGINE — 判定ロジック本体
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* 星をランダム配置 */
+(function stars(){
+  const box = $("#stars"); let html = "";
+  for(let i=0;i<70;i++){
+    html += `<i style="left:${(Math.random()*100).toFixed(2)}%;top:${(Math.random()*100).toFixed(2)}%;
+      animation-delay:${(Math.random()*4).toFixed(2)}s;
+      transform:scale(${(0.5+Math.random()*1.1).toFixed(2)})"></i>`;
+  }
+  box.innerHTML = html;
+})();
+
+/* 数字の一桁化（マスターナンバー 11/22/33 は保持） */
+function reduce(n){
+  while(n>9 && n!==11 && n!==22 && n!==33){
+    n = String(n).split("").reduce((a,c)=>a+ +c,0);
+  }
+  return n;
+}
+/* CORE = ライフパスナンバー（年・月・日をそれぞれ還元してから合算） */
+function coreNumber(y,m,d){
+  return reduce(reduce(y)+reduce(m)+reduce(d));
+}
+/* 太陽星座 */
+function sunSign(m,d){
+  for(const s of SIGNS){
+    const [sm,sd,em,ed] = s.r;
+    if(sm<=em){ if((m===sm&&d>=sd)||(m===em&&d<=ed)||(m>sm&&m<em)) return s; }
+    else{ if((m===sm&&d>=sd)||(m===em&&d<=ed)||m>sm||m<em) return s; }
+  }
+  return SIGNS[0];
+}
+/* 卦の決定：生年月日＋時刻＋回答から 1〜64 */
+function hexIndex(y,m,d,hh,mm,answers){
+  let seed = y*10000 + m*100 + d + hh*37 + mm*7;
+  answers.forEach((a,i)=> seed += (a+1) * (i+2) * 13);
+  return seed % 64;
+}
+/* エネルギー5軸のスコア（0-100） */
+function energy(core, sign, answers){
+  const v = CORE[core].vec.slice();
+  const ev = ELEMENTS[sign.el].vec;
+  for(let i=0;i<5;i++) v[i] += ev[i];
+  answers.forEach((ai,qi)=>{
+    const add = QUIZ[qi].o[ai].v;
+    for(let i=0;i<5;i++) v[i] += add[i];
+  });
+  const max = Math.max(...v) || 1;
+  return v.map(x => Math.round(30 + (x/max)*70));
+}
+
+/* ---- 状態 ---- */
+const state = { name:"", y:0, m:0, d:0, hh:12, mm:0, noTime:false, answers:[], qi:0, result:null };
+
+/* ---- 画面遷移 ---- */
+function show(id){
+  $$(".screen").forEach(s=>s.classList.remove("on"));
+  $("#"+id).classList.add("on");
+  window.scrollTo({top:0,behavior:"instant"});
+}
+
+/* ---- 日付セレクト生成 ---- */
+(function buildSelects(){
+  const nowY = new Date().getFullYear();
+  let h = '<option value="">年</option>';
+  for(let y=nowY;y>=1920;y--) h += `<option value="${y}">${y}年</option>`;
+  $("#fY").innerHTML = h;
+  h = '<option value="">月</option>';
+  for(let m=1;m<=12;m++) h += `<option value="${m}">${m}月</option>`;
+  $("#fM").innerHTML = h;
+  fillDays();
+})();
+function fillDays(){
+  const y = +$("#fY").value, m = +$("#fM").value;
+  const last = (y&&m) ? new Date(y,m,0).getDate() : 31;
+  const cur = $("#fD").value;
+  let h = '<option value="">日</option>';
+  for(let d=1;d<=last;d++) h += `<option value="${d}">${d}日</option>`;
+  $("#fD").innerHTML = h;
+  if(cur && +cur<=last) $("#fD").value = cur;
+}
+$("#fY").addEventListener("change",fillDays);
+$("#fM").addEventListener("change",fillDays);
+$("#fNoTime").addEventListener("change",e=>{
+  $("#fT").disabled = e.target.checked;
+  $("#fT").style.opacity = e.target.checked ? .4 : 1;
+});
+
+/* ---- 表紙 → 入力 ---- */
+$("#btnStart").addEventListener("click",()=>{
+  try{
+    const saved = JSON.parse(localStorage.getItem("godseal.input")||"null");
+    if(saved){
+      $("#fName").value = saved.name||"";
+      $("#fY").value = saved.y||""; $("#fM").value = saved.m||""; fillDays(); $("#fD").value = saved.d||"";
+      if(saved.noTime){ $("#fNoTime").checked = true; $("#fT").disabled = true; $("#fT").style.opacity=.4; }
+      else if(saved.t) $("#fT").value = saved.t;
+    }
+  }catch(e){}
+  show("screen-form");
+});
+$("#btnBackIntro").addEventListener("click",()=>show("screen-intro"));
+
+/* ---- 入力 → 設問 ---- */
+$("#btnToQuiz").addEventListener("click",()=>{
+  const y=+$("#fY").value, m=+$("#fM").value, d=+$("#fD").value;
+  if(!y||!m||!d){ $("#formErr").textContent="生年月日をすべて選んでください。"; return; }
+  state.name = $("#fName").value.trim();
+  state.y=y; state.m=m; state.d=d;
+  state.noTime = $("#fNoTime").checked;
+  const t = $("#fT").value || "12:00";
+  state.hh = state.noTime ? 12 : +t.split(":")[0];
+  state.mm = state.noTime ? 0 : +t.split(":")[1];
+  $("#formErr").textContent="";
+  try{ localStorage.setItem("godseal.input",JSON.stringify({name:state.name,y,m,d,t,noTime:state.noTime})); }catch(e){}
+  state.answers=[]; state.qi=0;
+  renderQuestion();
+  show("screen-quiz");
+});
+
+/* ---- 設問 ---- */
+function renderQuestion(){
+  const q = QUIZ[state.qi];
+  $("#progBar").style.width = ((state.qi)/QUIZ.length*100)+"%";
+  $("#qNum").textContent = "Q"+(state.qi+1);
+  $("#qTot").textContent = (state.qi+1)+" / "+QUIZ.length;
+  $("#qText").textContent = q.q;
+  $("#qOpts").innerHTML = q.o.map((o,i)=>`<button class="opt" data-i="${i}">${o.t}</button>`).join("");
+  $("#btnQBack").style.visibility = state.qi===0 ? "hidden" : "visible";
+}
+$("#qOpts").addEventListener("click",e=>{
+  const b = e.target.closest(".opt"); if(!b) return;
+  state.answers[state.qi] = +b.dataset.i;
+  if(state.qi < QUIZ.length-1){ state.qi++; renderQuestion(); }
+  else runCalc();
+});
+$("#btnQBack").addEventListener("click",()=>{
+  if(state.qi>0){ state.qi--; renderQuestion(); } else show("screen-form");
+});
+
+/* ---- 計算演出 ---- */
+const CALC_MSG = ["魂の刻印を読み取っています","カバラの数を還元しています","天球の位置を照合しています","易の卦を立てています","MARIA と FACE を編んでいます"];
+function runCalc(){
+  show("screen-calc");
+  let i=0;
+  $("#calcText").textContent = CALC_MSG[0];
+  const iv = setInterval(()=>{
+    i++;
+    if(i<CALC_MSG.length) $("#calcText").textContent = CALC_MSG[i];
+  },620);
+  setTimeout(()=>{ clearInterval(iv); buildResult(); show("screen-result"); }, 3300);
+}
+
+/* ---- 判定 ---- */
+function diagnose(){
+  const core = coreNumber(state.y, state.m, state.d);
+  const sign = sunSign(state.m, state.d);
+  const hx = hexIndex(state.y,state.m,state.d,state.hh,state.mm,state.answers);
+  const en = energy(core, sign, state.answers);
+  const themeKey = QUIZ[0].o[state.answers[0]].theme;
+  const stateKey = QUIZ[1].o[state.answers[1]].state;
+  const top = AXES[en.indexOf(Math.max(...en))];
+  return {core, sign, hx, en, themeKey, stateKey, top};
+}
+
+/* ---- 結果の描画 ---- */
+function buildResult(){
+  const r = diagnose();
+  state.result = r;
+  const c = CORE[r.core];
+  const hexStr = HEX[r.hx].split("|");
+
+  $("#rName").textContent = state.name ? `${state.name} さんの ゴッドシール` : "あなたの ゴッドシール";
+  $("#rCore").textContent = r.core;
+  $("#rType").textContent = c.type;
+  $("#rTypeEn").textContent = c.en;
+  $("#rCatch").textContent = c.catch;
+  $("#rBadges").innerHTML = [
+    r.sign.n, r.sign.el+"のエレメント", "第"+(r.hx+1)+"卦 "+hexStr[0], "推進力：" + r.top
+  ].map(t=>`<span class="badge">${t}</span>`).join("");
+
+  $("#rMaria").textContent = c.maria;
+  $("#rFace").textContent = r.sign.face;
+  $("#rFaceKv").innerHTML = `
+    <dt>太陽サイン</dt><dd>${r.sign.n}（${r.sign.en}）</dd>
+    <dt>エレメント</dt><dd>${r.sign.el} ― ${ELEMENTS[r.sign.el].desc}</dd>
+    <dt>動き方</dt><dd>${r.sign.style}</dd>
+    <dt>力の出る舞台</dt><dd>${r.sign.stage}</dd>`;
+
+  drawChart(r.en);
+  $("#rAxis").innerHTML = AXES.map((a,i)=>`<div><span>${a}</span><b>${r.en[i]}</b></div>`).join("");
+
+  $("#rHexLines").innerHTML = hexStr[2].split("").map(b=>`<span class="${b==="1"?"":"yin"}"></span>`).join("");
+  $("#rHexName").textContent = hexStr[0];
+  $("#rHexNo").textContent = "第"+(r.hx+1)+"卦 ／ "+ELEMENTS_HEX(hexStr[2]);
+  $("#rHexKey").textContent = hexStr[1];
+  $("#rHexBody").textContent = hexStr[3];
+
+  $("#rStrong").innerHTML = c.strong.map(s=>`<li>${s}</li>`).join("");
+  $("#rWeak").innerHTML = c.weak.map(s=>`<li>${s}</li>`).join("");
+
+  const th = THEMES[r.themeKey];
+  $("#rThemeTitle").textContent = th.title;
+  $("#rAdvice").textContent = th.base + "\n\n" + STATES[r.stateKey] + "\n\n" + AXIS_MSG[r.top];
+  $("#rKeys").innerHTML = `
+    <dt>扉をひらく鍵</dt><dd>${c.key}</dd>
+    <dt>あなたの色</dt><dd>${c.color}</dd>
+    <dt>響き合う数</dt><dd>${c.ally.join("・")}</dd>
+    <dt>生年月日</dt><dd>${state.y}年${state.m}月${state.d}日${state.noTime?"（時間不明）":` ${String(state.hh).padStart(2,"0")}:${String(state.mm).padStart(2,"0")}`}</dd>`;
+}
+
+/* 上卦・下卦の名前（易の八卦） */
+const TRIGRAMS = {"111":"天","000":"地","010":"水","101":"火","100":"雷","011":"風","001":"山","110":"沢"};
+function ELEMENTS_HEX(bin){
+  return "下卦 "+TRIGRAMS[bin.slice(0,3)]+" ・ 上卦 "+TRIGRAMS[bin.slice(3,6)];
+}
+
+/* ---- レーダーチャート ---- */
+function drawChart(vals){
+  const cx=150, cy=152, R=98, N=5;
+  const pt = (i,r)=>{
+    const a = -Math.PI/2 + i*2*Math.PI/N;
+    return [cx + Math.cos(a)*r, cy + Math.sin(a)*r];
+  };
+  let g = "";
+  [.25,.5,.75,1].forEach(k=>{
+    const p = Array.from({length:N},(_,i)=>pt(i,R*k).map(v=>v.toFixed(1)).join(",")).join(" ");
+    g += `<polygon points="${p}" fill="none" stroke="rgba(217,182,90,${k===1?.42:.16})" stroke-width="1"/>`;
+  });
+  for(let i=0;i<N;i++){
+    const [x,y] = pt(i,R);
+    g += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(217,182,90,.2)" stroke-width="1"/>`;
+  }
+  const dp = vals.map((v,i)=>pt(i,R*v/100).map(n=>n.toFixed(1)).join(",")).join(" ");
+  g += `<polygon points="${dp}" fill="rgba(217,182,90,.26)" stroke="#f4dea1" stroke-width="1.6" stroke-linejoin="round"/>`;
+  vals.forEach((v,i)=>{
+    const [x,y] = pt(i,R*v/100);
+    g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="#f4dea1"/>`;
+  });
+  AXES.forEach((a,i)=>{
+    const [x,y] = pt(i,R+24);
+    g += `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle"
+            fill="#d9b65a" font-size="13" font-family="Shippori Mincho, Hiragino Mincho ProN, serif">${a}</text>`;
+  });
+  $("#rChart").innerHTML = g;
+}
+
+/* ---- 結果テキスト ---- */
+function resultText(){
+  const r = state.result, c = CORE[r.core], h = HEX[r.hx].split("|");
+  return [
+    "── ゴッドシール診断 ──",
+    (state.name? state.name+" さん":"")+` ${state.y}/${state.m}/${state.d}`,
+    "",
+    `CORE ${r.core}／${c.type}（${c.en}）`,
+    `「${c.catch}」`,
+    "",
+    `太陽サイン：${r.sign.n}（${r.sign.el}）`,
+    `いまの卦：第${r.hx+1}卦 ${h[0]} ― ${h[1]}`,
+    `推進力：${r.top}`,
+    AXES.map((a,i)=>`${a} ${r.en[i]}`).join(" / "),
+    "",
+    "扉をひらく鍵：",
+    c.key,
+    "",
+    "https://www.dnadesignlabo.com/"
+  ].join("\n");
+}
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove("on"),2200);
+}
+async function copyText(txt,msg){
+  try{ await navigator.clipboard.writeText(txt); toast(msg); }
+  catch(e){
+    const ta=document.createElement("textarea"); ta.value=txt;
+    ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand("copy"); toast(msg); }catch(_){ toast("コピーできませんでした"); }
+    document.body.removeChild(ta);
+  }
+}
+$("#btnCopy").addEventListener("click",()=>copyText(resultText(),"結果をコピーしました"));
+$("#btnShare").addEventListener("click",async ()=>{
+  const p = new URLSearchParams({
+    d:`${state.y}-${state.m}-${state.d}`,
+    t: state.noTime ? "x" : `${state.hh}:${state.mm}`,
+    a: state.answers.join("")
+  });
+  if(state.name) p.set("n", state.name);
+  const url = location.origin + location.pathname + "?" + p.toString();
+  if(navigator.share){
+    try{ await navigator.share({title:"ゴッドシール診断", text:resultText().split("\n").slice(0,6).join("\n"), url}); return; }catch(e){}
+  }
+  copyText(url,"共有リンクをコピーしました");
+});
+$("#btnPrint").addEventListener("click",()=>window.print());
+$("#btnAgain").addEventListener("click",()=>{
+  history.replaceState(null,"",location.pathname);
+  state.answers=[]; state.qi=0; show("screen-form");
+});
+
+/* ---- URLパラメータからの復元 ---- */
+(function restore(){
+  const p = new URLSearchParams(location.search);
+  const d = p.get("d"), a = p.get("a");
+  if(!d || !a || a.length !== QUIZ.length) return;
+  const [y,m,dd] = d.split("-").map(Number);
+  if(!y||!m||!dd) return;
+  const answers = a.split("").map(Number);
+  if(answers.some((v,i)=> isNaN(v) || !QUIZ[i].o[v])) return;
+  const t = p.get("t")||"12:0";
+  state.name = (p.get("n")||"").slice(0,20);
+  state.y=y; state.m=m; state.d=dd; state.answers=answers;
+  state.noTime = (t==="x");
+  state.hh = state.noTime ? 12 : (+t.split(":")[0]||12);
+  state.mm = state.noTime ? 0  : (+t.split(":")[1]||0);
+  buildResult();
+  show("screen-result");
+})();
+</script>
+</body>
+</html>
