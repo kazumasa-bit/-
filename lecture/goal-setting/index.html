@@ -1,0 +1,1084 @@
+<title>目標を決める・叶える</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Shippori+Mincho+B1:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#ECEEF1; --surface:#FCFCFD; --surface-2:#F3F5F8;
+  --ink:#15181E; --ink-2:#4C5462; --ink-3:#79808E;
+  --line:#D8DCE4; --line-2:#C3C9D4;
+  --indigo:#2C4B8C; --indigo-ink:#223C72; --indigo-soft:#E4EAF5;
+  --ochre:#9F7216; --ochre-ink:#8A6212; --ochre-soft:#F6EDD9;
+  --shadow:0 1px 2px rgba(21,24,30,.06), 0 12px 32px -14px rgba(21,24,30,.28);
+  --jp-disp:"Shippori Mincho B1",serif;
+  --jp-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1015; --surface:#171A21; --surface-2:#1D2129;
+    --ink:#E9EAEE; --ink-2:#A6AEBD; --ink-3:#7C8493;
+    --line:#282D38; --line-2:#39404E;
+    --indigo:#93ACE2; --indigo-ink:#B7C7EE; --indigo-soft:#1C2740;
+    --ochre:#DFB25E; --ochre-ink:#EBC781; --ochre-soft:#2C2517;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 16px 40px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1015; --surface:#171A21; --surface-2:#1D2129;
+  --ink:#E9EAEE; --ink-2:#A6AEBD; --ink-3:#7C8493;
+  --line:#282D38; --line-2:#39404E;
+  --indigo:#93ACE2; --indigo-ink:#B7C7EE; --indigo-soft:#1C2740;
+  --ochre:#DFB25E; --ochre-ink:#EBC781; --ochre-soft:#2C2517;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 16px 40px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--jp-body); font-size:15px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  min-height:100dvh; display:flex; flex-direction:column;
+}
+h1,h2,h3,p,ul,ol,li,figure{margin:0; padding:0}
+ul,ol{list-style:none}
+button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
+:focus-visible{outline:2px solid var(--indigo); outline-offset:2px; border-radius:3px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex; align-items:center; gap:.9rem; flex-wrap:wrap;
+  padding-block:.55rem; padding-inline:max(16px,2.2vw);
+  border-bottom:1px solid var(--line); background:var(--surface);
+}
+.brand{font-family:var(--jp-disp); font-weight:700; font-size:1rem; letter-spacing:.04em; white-space:nowrap}
+.brand small{font-family:var(--mono); font-size:.66rem; color:var(--ink-3); letter-spacing:.12em; margin-inline-start:.55rem}
+.tools{display:flex; align-items:center; gap:.4rem; margin-inline-start:auto; flex-wrap:wrap}
+.tbtn{
+  font-family:var(--mono); font-size:.72rem; letter-spacing:.06em; color:var(--ink-2);
+  border:1px solid var(--line-2); border-radius:2px; padding:.3rem .6rem;
+}
+.tbtn[aria-pressed="true"]{background:var(--indigo-soft); border-color:var(--indigo); color:var(--indigo-ink)}
+.clock{
+  display:flex; align-items:baseline; gap:.5rem; font-family:var(--mono);
+  border:1px solid var(--line-2); border-radius:2px; padding:.28rem .6rem;
+}
+.clock b{font-weight:500; font-size:.86rem; font-variant-numeric:tabular-nums}
+.clock .delta{font-size:.68rem; color:var(--ink-3); font-variant-numeric:tabular-nums}
+.clock.late .delta{color:#B4442F}
+.clock.early .delta{color:var(--indigo-ink)}
+:root[data-theme="dark"] .clock.late .delta,
+:root:not([data-theme="light"]) .clock.late .delta{color:#E8886F}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .clock.late .delta{color:#B4442F}}
+
+/* ---------- stage ---------- */
+.stage{
+  flex:1; min-height:0; display:grid; grid-auto-rows:min-content;
+  justify-items:center; align-content:safe center; overflow:auto;
+  padding-block:clamp(10px,1.8vw,22px); padding-inline:max(16px,2.4vw);
+}
+.slide{
+  width:min(1120px,100%); aspect-ratio:16/9;
+  background:var(--surface); border:1px solid var(--line); border-radius:4px;
+  box-shadow:var(--shadow);
+  font-size:clamp(13px,1.58vw,19px);
+  padding:2.1em 2.5em 1.7em;
+  display:flex; flex-direction:column; gap:1.1em;
+  overflow:hidden; position:relative;
+}
+.slide[hidden]{display:none!important}
+.slide::after{content:""; position:absolute; inset-inline:0; top:0; height:3px; background:var(--indigo)}
+.slide.is-work::after{background:var(--ochre)}
+.slide.is-title::after{display:none}
+
+.eyebrow{
+  font-family:var(--mono); font-size:.62em; letter-spacing:.14em; color:var(--ink-3);
+  display:flex; align-items:center; gap:.7em; flex-shrink:0;
+}
+.eyebrow .sec{color:var(--indigo-ink)}
+.slide.is-work .eyebrow .sec{color:var(--ochre-ink)}
+.eyebrow .dash{flex:1; height:1px; background:var(--line)}
+.s-h{font-family:var(--jp-disp); font-weight:700; font-size:1.85em; line-height:1.32; text-wrap:balance; letter-spacing:.01em}
+.s-h.sm{font-size:1.5em}
+.lead{font-size:.94em; color:var(--ink-2); max-width:62ch; line-height:1.75}
+.body{flex:1; min-height:0; display:flex; flex-direction:column; justify-content:safe center; gap:.9em; overflow:auto}
+
+/* title slide */
+.slide.is-title{justify-content:center; gap:1.3em; padding-inline:3em}
+.title-rule{width:3.2em; height:2px; background:var(--indigo)}
+.t-big{font-family:var(--jp-disp); font-weight:700; font-size:3.15em; line-height:1.25; letter-spacing:.03em}
+.t-sub{font-size:1.05em; color:var(--ink-2); max-width:44ch}
+.t-meta{display:flex; gap:1.6em; flex-wrap:wrap; font-family:var(--mono); font-size:.7em; color:var(--ink-3); letter-spacing:.06em; margin-top:.6em}
+
+/* generic pieces */
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:1em; align-items:start}
+.cards{display:grid; grid-template-columns:repeat(3,1fr); gap:.8em}
+.cards.two{grid-template-columns:1fr 1fr}
+.card{
+  background:var(--surface-2); border:1px solid var(--line); border-radius:3px;
+  padding:.95em 1.05em; display:flex; flex-direction:column; gap:.4em;
+}
+.card h3{font-family:var(--jp-disp); font-size:1.02em; font-weight:600; line-height:1.45}
+.card p{font-size:.84em; color:var(--ink-2); line-height:1.7}
+.card .tag{font-family:var(--mono); font-size:.62em; letter-spacing:.1em; color:var(--indigo-ink)}
+
+.list{display:flex; flex-direction:column; gap:.55em}
+.list li{display:flex; gap:.7em; font-size:.92em; line-height:1.68; align-items:baseline}
+.list li::before{content:""; width:.42em; height:.42em; flex:0 0 auto; background:var(--indigo); border-radius:50%; transform:translateY(-.12em)}
+.slide.is-work .list li::before{background:var(--ochre)}
+.list li b{font-weight:700}
+
+.flow{display:flex; align-items:stretch; gap:.5em; flex-wrap:wrap}
+.flow-step{
+  flex:1 1 8em; min-width:0; background:var(--surface-2); border:1px solid var(--line);
+  border-radius:3px; padding:.8em .85em; display:flex; flex-direction:column; gap:.28em; position:relative;
+}
+.flow-step .n{font-family:var(--mono); font-size:.62em; letter-spacing:.1em; color:var(--indigo-ink)}
+.flow-step .t{font-family:var(--jp-disp); font-weight:600; font-size:1em; line-height:1.4}
+.flow-step .d{font-size:.78em; color:var(--ink-2); line-height:1.6}
+.flow-step + .flow-step::before{
+  content:"›"; position:absolute; inset-inline-start:-.48em; top:50%; transform:translateY(-50%);
+  color:var(--line-2); font-size:1.1em; line-height:1;
+}
+
+.contrast{display:grid; grid-template-columns:1fr 1fr; gap:.8em}
+.pane{border:1px solid var(--line); border-radius:3px; padding:.9em 1em; display:flex; flex-direction:column; gap:.45em}
+.pane .plabel{font-family:var(--mono); font-size:.64em; letter-spacing:.12em}
+.pane.bad{background:var(--surface-2)}
+.pane.bad .plabel{color:var(--ink-3)}
+.pane.bad .q{color:var(--ink-2); text-decoration:line-through; text-decoration-color:var(--line-2)}
+.pane.good{background:var(--indigo-soft); border-color:var(--indigo)}
+.pane.good .plabel{color:var(--indigo-ink)}
+.pane .q{font-family:var(--jp-disp); font-size:1.05em; font-weight:600; line-height:1.5}
+.pane .note-s{font-size:.8em; color:var(--ink-2); line-height:1.65}
+
+.callout{
+  border-inline-start:3px solid var(--indigo); background:var(--indigo-soft);
+  padding:.75em 1em; border-radius:0 3px 3px 0; font-size:.9em; line-height:1.7;
+}
+.callout b{font-family:var(--jp-disp); font-weight:700}
+.slide.is-work .callout{border-color:var(--ochre); background:var(--ochre-soft)}
+
+.bigq{
+  flex:1; display:flex; flex-direction:column; justify-content:center; gap:.8em;
+  text-align:center; padding-inline:1em;
+}
+.bigq .q{font-family:var(--jp-disp); font-weight:700; font-size:2.3em; line-height:1.45; text-wrap:balance}
+.bigq .sub{font-size:.92em; color:var(--ink-2)}
+
+.work-head{display:flex; align-items:center; gap:.8em; flex-wrap:wrap}
+.pill{
+  font-family:var(--mono); font-size:.66em; letter-spacing:.1em; border-radius:999px;
+  padding:.25em .8em; background:var(--ochre-soft); color:var(--ochre-ink); border:1px solid var(--ochre);
+}
+.tmpl{
+  background:var(--surface-2); border:1px dashed var(--line-2); border-radius:3px;
+  padding:1em 1.1em; font-family:var(--jp-disp); font-size:1.15em; line-height:2.1;
+}
+.tmpl u{text-decoration:none; border-bottom:1.5px solid var(--ochre); padding-inline:1.6em .3em; color:var(--ink-3)}
+
+.kv{display:grid; grid-template-columns:auto 1fr; gap:.45em 1em; font-size:.9em; align-items:baseline}
+.kv dt{font-family:var(--mono); font-size:.82em; color:var(--indigo-ink); letter-spacing:.06em; white-space:nowrap}
+.kv dd{color:var(--ink-2); line-height:1.65}
+
+.agenda{display:grid; grid-template-columns:auto 1fr auto; gap:.32em 1em; font-size:.86em; align-items:baseline}
+.agenda .mn{font-family:var(--mono); font-size:.86em; color:var(--ink-3); font-variant-numeric:tabular-nums; white-space:nowrap}
+.agenda .nm{color:var(--ink)}
+.agenda .dur{font-family:var(--mono); font-size:.8em; color:var(--ink-3); text-align:end; font-variant-numeric:tabular-nums}
+
+.src{font-family:var(--mono); font-size:.64em; color:var(--ink-3); line-height:1.8; letter-spacing:.02em}
+.foot{display:flex; justify-content:space-between; align-items:baseline; gap:1em; flex-shrink:0;
+  font-family:var(--mono); font-size:.6em; letter-spacing:.1em; color:var(--ink-3); border-top:1px solid var(--line); padding-top:.55em}
+
+/* ---------- notes ---------- */
+.notes{
+  border-top:1px solid var(--line); background:var(--surface);
+  padding-block:.75rem .85rem; padding-inline:max(16px,2.4vw);
+  display:none;
+}
+body.notes-on .notes{display:block}
+.notes-inner{max-width:1120px; margin-inline:auto; display:flex; gap:1.2rem; align-items:flex-start; flex-wrap:wrap}
+.notes-label{font-family:var(--mono); font-size:.64rem; letter-spacing:.14em; color:var(--ochre-ink); white-space:nowrap; padding-top:.28rem}
+#noteBody{flex:1; min-width:min(100%,18rem); font-size:.82rem; line-height:1.72; color:var(--ink-2)}
+#noteBody p{margin-bottom:.25rem}
+#noteBody b{color:var(--ink); font-weight:700}
+#noteBody ul{display:flex; flex-direction:column; gap:.12rem}
+#noteBody li{padding-inline-start:.9rem; position:relative}
+#noteBody li::before{content:"–"; position:absolute; inset-inline-start:0; color:var(--ink-3)}
+
+/* ---------- milestone rail ---------- */
+.rail{
+  display:flex; gap:2px; border-top:1px solid var(--line); background:var(--surface);
+  padding-block:.5rem .6rem; padding-inline:max(16px,2.4vw);
+}
+.seg{
+  position:relative; text-align:start; padding:0; min-width:0;
+  display:flex; flex-direction:column; gap:.3rem;
+}
+.seg .bar{height:4px; background:var(--line); border-radius:1px; overflow:hidden}
+.seg .bar i{display:block; height:100%; width:0; background:var(--indigo); transition:width .25s ease}
+.seg.done .bar i{width:100%}
+.seg .lbl{
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.05em; color:var(--ink-3);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.seg.now .lbl{color:var(--indigo-ink)}
+.seg .mn{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+
+/* ---------- outline overlay ---------- */
+.sheet{
+  position:fixed; inset:0; background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(3px); z-index:20; overflow:auto;
+  padding-block:clamp(16px,4vh,48px); padding-inline:max(16px,4vw);
+}
+.sheet[hidden]{display:none!important}
+.sheet-in{max-width:900px; margin-inline:auto; background:var(--surface); border:1px solid var(--line); border-radius:4px; box-shadow:var(--shadow); padding:1.6rem 1.6rem 1.8rem}
+.sheet-in h2{font-family:var(--jp-disp); font-size:1.2rem; margin-bottom:1rem}
+.ol-sec{margin-bottom:1.1rem}
+.ol-sec h3{font-family:var(--mono); font-size:.66rem; letter-spacing:.13em; color:var(--indigo-ink); margin-bottom:.4rem; border-bottom:1px solid var(--line); padding-bottom:.3rem}
+.ol-item{display:grid; grid-template-columns:2.6rem 3rem 1fr; gap:.6rem; width:100%; text-align:start; padding:.3rem .2rem; border-radius:2px; font-size:.85rem}
+.ol-item:hover{background:var(--surface-2)}
+.ol-item .no,.ol-item .at{font-family:var(--mono); font-size:.72rem; color:var(--ink-3); font-variant-numeric:tabular-nums}
+.ol-item.cur{background:var(--indigo-soft)}
+.ol-item.cur .tt{color:var(--indigo-ink); font-weight:700}
+
+@media (max-width:820px), (max-height:620px){
+  .slide{aspect-ratio:auto; min-height:min(60vh,420px); padding:1.6em 1.4em 1.3em}
+  .slide.is-title{padding-inline:1.4em}
+  .cards,.cards.two,.grid2,.contrast{grid-template-columns:1fr}
+  .flow-step + .flow-step::before{display:none}
+  .t-big{font-size:2.35em}
+  .bigq .q{font-size:1.7em}
+  .seg .lbl{font-size:.55rem}
+  .notes{max-height:38dvh; overflow:auto}
+  #noteBody{font-size:.78rem}
+}
+@media print{
+  body{display:block; background:#fff}
+  .topbar,.rail,.notes,.sheet{display:none!important}
+  .stage{display:block; overflow:visible; padding:0}
+  .slide{display:flex!important; width:100%; box-shadow:none; break-after:page; margin-bottom:8mm}
+}
+</style>
+
+<header class="topbar">
+  <div class="brand">目標を決める・叶える<small>60 MIN</small></div>
+  <div class="tools">
+    <div class="clock" id="clock"><b id="clockT">00:00</b><span class="delta" id="clockD">開始前</span></div>
+    <button class="tbtn" id="btnTimer">▶ 計測</button>
+    <button class="tbtn" id="btnNotes" aria-pressed="true">講師ノート N</button>
+    <button class="tbtn" id="btnOutline">目次 O</button>
+    <button class="tbtn" id="btnPrev">←</button>
+    <button class="tbtn" id="btnNext">→</button>
+  </div>
+</header>
+
+<main class="stage" id="stage">
+
+<!-- 1 -->
+<section class="slide is-title" data-sec="0" data-start="0" data-title="タイトル">
+  <div class="eyebrow"><span class="sec">60分ワークショップ</span><span class="dash"></span><span>2026</span></div>
+  <div class="title-rule"></div>
+  <h1 class="t-big">目標を決める、<br>叶える。</h1>
+  <p class="t-sub">続かないのは、意志が弱いからではありません。<br>目標が「設計」されていないからです。</p>
+  <div class="t-meta"><span>所要 60分</span><span>講義 + ワーク3回</span><span>筆記用具をご用意ください</span></div>
+  <div class="note">
+    <p><b>0:00–0:02｜つかみ</b></p>
+    <ul>
+      <li>最初に宣言する：「今日は根性論の話を一切しません。目標は気合いではなく設計で叶えます」</li>
+      <li>手を挙げてもらう：「今年、目標を立てた人？」→「そのうち、今も続いている人？」 手が減るのを全員で見る。それが今日の出発点。</li>
+      <li>筆記用具とスマホ（カレンダー登録に使う）を出してもらう。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-sec="0" data-start="2" data-title="今日のゴールと進行">
+  <div class="eyebrow"><span class="sec">導入</span><span class="dash"></span><span>02</span></div>
+  <h2 class="s-h sm">この60分で持ち帰るもの</h2>
+  <div class="body">
+    <div class="cards">
+      <div class="card"><span class="tag">GOAL 1</span><h3>目標を1つ、自分の言葉で書ける</h3><p>期限と数字が入った、他人が読んでも分かる形にします。</p></div>
+      <div class="card"><span class="tag">GOAL 2</span><h3>明日の行動まで分解できる</h3><p>1年 → 3ヶ月 → 今週 → 明日。降りてこない目標は目標ではありません。</p></div>
+      <div class="card"><span class="tag">GOAL 3</span><h3>つまずいた時の戻り方を持つ</h3><p>続く人は折れない人ではなく、戻り方を決めている人です。</p></div>
+    </div>
+    <div class="agenda">
+      <span class="mn">00–05</span><span class="nm">導入：今日の地図</span><span class="dur">5分</span>
+      <span class="mn">05–15</span><span class="nm">なぜ目標は叶わないのか — 3つの落とし穴</span><span class="dur">10分</span>
+      <span class="mn">15–32</span><span class="nm">決める — 目標の解像度を上げる ＋ ワーク1</span><span class="dur">17分</span>
+      <span class="mn">32–48</span><span class="nm">叶える — 続く仕組みをつくる ＋ ワーク2</span><span class="dur">16分</span>
+      <span class="mn">48–56</span><span class="nm">折れない — 振り返りと修正</span><span class="dur">8分</span>
+      <span class="mn">56–60</span><span class="nm">まとめ ＋ ワーク3：明日やる1つ</span><span class="dur">4分</span>
+    </div>
+  </div>
+  <div class="foot"><span>AGENDA</span><span>02 / 26</span></div>
+  <div class="note">
+    <p><b>0:02–0:05｜今日の地図を渡す</b></p>
+    <ul>
+      <li>「聞いて終わり」にしないため、ワークが3回あることを先に伝える。書く時間は青ではなく黄色のスライドで来る、と色のルールも言っておくと進行が楽。</li>
+      <li>3つのゴールは、このあと繰り返し参照する。特にGOAL 3（戻り方）は今日の一番の持ち帰りだと予告しておく。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-sec="1" data-start="5" data-title="問い：去年の目標を覚えていますか">
+  <div class="eyebrow"><span class="sec">なぜ叶わないのか</span><span class="dash"></span><span>03</span></div>
+  <div class="bigq">
+    <p class="q">去年のいま頃、<br>あなたは何を目標にしていましたか？</p>
+    <p class="sub">30秒。思い出せた人／思い出せなかった人、どちらも今日の材料になります。</p>
+  </div>
+  <div class="foot"><span>QUESTION</span><span>03 / 26</span></div>
+  <div class="note">
+    <p><b>0:05–0:07｜考えてもらう（30秒）</b></p>
+    <ul>
+      <li>あえて沈黙をつくる。思い出せない人が多数なのが普通、と先に言ってしまうと安心して手が挙がる。</li>
+      <li>拾い方：「思い出せた人？」→ 少数。「では、思い出せなかった人？」→ 多数。「忘れる目標は、忘れられる形で書かれていた、ということです」とつないで次へ。</li>
+      <li>時間が押していたらここは15秒でカット可能。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-sec="1" data-start="7" data-title="落とし穴① 願望のまま置かれている">
+  <div class="eyebrow"><span class="sec">なぜ叶わないのか</span><span class="dash"></span><span>04</span></div>
+  <h2 class="s-h sm">落とし穴 ①　「願望」を目標と呼んでいる</h2>
+  <div class="body">
+    <div class="contrast">
+      <div class="pane bad">
+        <span class="plabel">願望 — 評価できない</span>
+        <p class="q">英語をがんばる</p>
+        <p class="q">healthy に暮らす</p>
+        <p class="note-s">いつまでに、どうなっていれば達成なのかが誰にも分からない。達成も未達成も判定できないものは、行動を変えません。</p>
+      </div>
+      <div class="pane good">
+        <span class="plabel">目標 — 判定できる</span>
+        <p class="q">6月末までに、英語の会議で自分から1回発言する</p>
+        <p class="q">3ヶ月後まで、週3回・30分歩く</p>
+        <p class="note-s">期限・数量・場面が入っている。今週やったかどうかが、自分で判定できます。</p>
+      </div>
+    </div>
+    <div class="callout"><b>判定できない目標は、振り返れない。</b>振り返れないものは、改善されないまま消えていきます。</div>
+  </div>
+  <div class="foot"><span>PITFALL 01</span><span>04 / 26</span></div>
+  <div class="note">
+    <p><b>0:07–0:09｜落とし穴①</b></p>
+    <ul>
+      <li>左右を読み上げて比較させる。「がんばる」は気持ちであって基準ではない、という一点だけ伝われば十分。</li>
+      <li>参加者に振る：「みなさんが今持っている目標は、左と右のどちらに近いですか」——正直に左だと認めてもらうことがワーク1の質を上げる。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-sec="1" data-start="9" data-title="落とし穴② 毎回やるかを決めている">
+  <div class="eyebrow"><span class="sec">なぜ叶わないのか</span><span class="dash"></span><span>05</span></div>
+  <h2 class="s-h sm">落とし穴 ②　毎回「やるかどうか」を決めている</h2>
+  <div class="body">
+    <div class="grid2">
+      <ul class="list">
+        <li>「今日は疲れたし、明日やろうか」——この<b>判断そのものがコスト</b>です。判断の回数が多い計画ほど、続きません。</li>
+        <li>続いている人は、意志が強いのではなく<b>決めなくていい状態</b>をつくっています。歯磨きを毎晩「やるか」と悩む人はいません。</li>
+        <li>だから設計の目標はひとつ。<b>判断の回数をゼロに近づけること。</b></li>
+      </ul>
+      <div class="card">
+        <span class="tag">言い換えると</span>
+        <h3>「やる気が出たらやる」は、<br>やらないための計画</h3>
+        <p>やる気は結果であって、原因ではありません。多くの場合、手をつけた後からしか出てきません。</p>
+        <p>後半（32分〜）で、判断を減らす3つの道具を扱います。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>PITFALL 02</span><span>05 / 26</span></div>
+  <div class="note">
+    <p><b>0:09–0:11｜落とし穴②</b></p>
+    <ul>
+      <li>ここは共感パート。具体例を自分の失敗で語ると空気がゆるむ（例：ジムの会員証、買ったまま開かない参考書）。</li>
+      <li>「やる気は原因ではなく結果」は今日のキーフレーズのひとつ。後半の2分ルールで回収するので、ここで種をまいておく。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-sec="1" data-start="11" data-title="落とし穴③ 一度の失敗で全部やめる">
+  <div class="eyebrow"><span class="sec">なぜ叶わないのか</span><span class="dash"></span><span>06</span></div>
+  <h2 class="s-h sm">落とし穴 ③　一度の失敗で、全部やめてしまう</h2>
+  <div class="body">
+    <div class="flow">
+      <div class="flow-step"><span class="n">DAY 1–9</span><span class="t">順調</span><span class="d">毎日できている。手応えもある。</span></div>
+      <div class="flow-step"><span class="n">DAY 10</span><span class="t">1日休む</span><span class="d">残業、体調、予定。必ず起きる。</span></div>
+      <div class="flow-step"><span class="n">DAY 11</span><span class="t">「もう無理だ」</span><span class="d">連続記録が切れた瞬間に、意味を失う。</span></div>
+      <div class="flow-step"><span class="n">DAY 12–</span><span class="t">目標ごと消える</span><span class="d">やめた理由さえ忘れられていく。</span></div>
+    </div>
+    <div class="callout"><b>途切れることは失敗ではありません。</b>失敗は、途切れたあとに戻らないことです。<br>10日のうち9日できていれば、それは十分に前進しています。</div>
+  </div>
+  <div class="foot"><span>PITFALL 03</span><span>06 / 26</span></div>
+  <div class="note">
+    <p><b>0:11–0:13｜落とし穴③（オール・オア・ナッシング）</b></p>
+    <ul>
+      <li>この流れは全員に身に覚えがある。ゆっくり読み上げて「これ、自分だと思った人？」と挙手を促す。</li>
+      <li>強調：9勝1敗を「1敗したから終わり」と採点しているのが問題。後半の「2回続けて休まない」ルール（20枚目）で必ず回収する。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-sec="1" data-start="13" data-title="研究が分かっていること">
+  <div class="eyebrow"><span class="sec">なぜ叶わないのか</span><span class="dash"></span><span>07</span></div>
+  <h2 class="s-h sm">研究が分かっていること（3つだけ）</h2>
+  <div class="body">
+    <div class="cards">
+      <div class="card"><span class="tag">具体性</span><h3>具体的で、少し難しい目標</h3><p>「ベストを尽くせ」より、具体的で挑戦的な目標のほうが成果が高い。ただし進捗のフィードバックがある場合に限ります。</p></div>
+      <div class="card"><span class="tag">自分ごと</span><h3>自分で選んだ目標</h3><p>人から与えられた目標より、自分で選んだ目標のほうが持続します。「なぜやるのか」を自分の言葉で言えるかどうか。</p></div>
+      <div class="card"><span class="tag">事前決定</span><h3>いつ・どこで・何をを決めておく</h3><p>「◯◯したら△△する」と事前に決めてある人は、決めていない人より実際に行動する割合が高くなります。</p></div>
+    </div>
+    <p class="src">参考：ロック＆レイサムの目標設定理論／デシ＆ライアンの自己決定理論／ゴルヴィツァーの実行意図（if-then プランニング）</p>
+  </div>
+  <div class="foot"><span>EVIDENCE</span><span>07 / 26</span></div>
+  <div class="note">
+    <p><b>0:13–0:15｜根拠を軽く置く</b></p>
+    <ul>
+      <li>学説の説明に深入りしない。<b>1枚1分以内</b>。「根性論ではなく、調べられていることです」と示すのが目的。</li>
+      <li>3つはこの後の構成に対応：具体性＝「決める」パート、自分ごと＝価値観から降ろす手順、事前決定＝If-Thenプランニング。その対応を口頭で言うと全体が一本の線になる。</li>
+      <li>質問が出たら「後で参考文献をお伝えします」で流し、時間を守る。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-sec="2" data-start="15" data-title="決める：順番を間違えない">
+  <div class="eyebrow"><span class="sec">決める</span><span class="dash"></span><span>08</span></div>
+  <h2 class="s-h sm">決める順番を、間違えない</h2>
+  <div class="body">
+    <div class="flow">
+      <div class="flow-step"><span class="n">STEP 1</span><span class="t">価値観</span><span class="d">何を大事にして生きたいか。ここだけは他人に決めさせない。</span></div>
+      <div class="flow-step"><span class="n">STEP 2</span><span class="t">ありたい姿</span><span class="d">1〜5年後、どんな状態でいたいか。まだ数字はいらない。</span></div>
+      <div class="flow-step"><span class="n">STEP 3</span><span class="t">目標</span><span class="d">ありたい姿に近づく一歩を、期限と数字で。</span></div>
+      <div class="flow-step"><span class="n">STEP 4</span><span class="t">行動</span><span class="d">今週・明日やること。カレンダーに入る単位まで。</span></div>
+    </div>
+    <div class="callout">多くの人は <b>STEP 3 から始めます</b>。だから、達成しても嬉しくない目標や、途中でどうでもよくなる目標が生まれます。<br>順番どおりに降ろした目標は、しんどい日に「なぜやるか」に戻れます。</div>
+  </div>
+  <div class="foot"><span>ORDER</span><span>08 / 26</span></div>
+  <div class="note">
+    <p><b>0:15–0:18｜決めるパートの骨格</b></p>
+    <ul>
+      <li>今日いちばん構造的な1枚。ここはゆっくり。</li>
+      <li>あるあるを挟む：「昇進」「TOEIC」「痩せる」——世間の正解から借りてきた目標は、STEP 3 からのスタート。だから続かない。</li>
+      <li>次の2枚（STEP 2 の質問、STEP 3 のSMART）はこの図の一部だと明示してから進む。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-sec="2" data-start="18" data-title="ありたい姿を掘る3つの質問">
+  <div class="eyebrow"><span class="sec">決める · STEP 2</span><span class="dash"></span><span>09</span></div>
+  <h2 class="s-h sm">「ありたい姿」を掘る、3つの質問</h2>
+  <div class="body">
+    <div class="cards">
+      <div class="card"><span class="tag">Q1 — 時間の使い道</span><h3>時間もお金も十分にあったら、<br>何に時間を使いますか</h3><p>制約を外すと、本当に欲しいものが出てきます。</p></div>
+      <div class="card"><span class="tag">Q2 — 生活の解像度</span><h3>5年後、どんな一日を<br>過ごしていたいですか</h3><p>肩書きではなく、朝起きてから寝るまでで答えてみる。</p></div>
+      <div class="card"><span class="tag">Q3 — 他者から見た自分</span><h3>人から、どんな人だと<br>言われたいですか</h3><p>近い人3人の顔を思い浮かべながら考えると具体的になります。</p></div>
+    </div>
+    <div class="callout">答えに繰り返し出てくる言葉が、あなたの<b>価値観</b>です。<br>ワーク1では、この言葉と繋がる目標を選んでください。</div>
+  </div>
+  <div class="foot"><span>3 QUESTIONS</span><span>09 / 26</span></div>
+  <div class="note">
+    <p><b>0:18–0:21｜3つの質問</b></p>
+    <ul>
+      <li>ここは声に出して考えてもらう時間を10秒ずつ挟むと効く。書かせなくてよい（書くのはワーク1）。</li>
+      <li>Q2 は「どんな一日か」で答えるのがコツ。肩書きで答えると手が止まる人が多い。</li>
+      <li>価値観の言葉の例を2つ3つ挙げる（自由・安心・成長・貢献・つながり・挑戦）と、参加者が自分の言葉を見つけやすい。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-sec="2" data-start="21" data-title="SMARTで解像度を上げる">
+  <div class="eyebrow"><span class="sec">決める · STEP 3</span><span class="dash"></span><span>10</span></div>
+  <h2 class="s-h sm">解像度を上げる 5つのチェック</h2>
+  <div class="body">
+    <div class="grid2">
+      <dl class="kv">
+        <dt>S — 具体的</dt><dd>何を、どこで、どのくらい。他人が読んで同じ絵が浮かぶか。</dd>
+        <dt>M — 測れる</dt><dd>達成／未達成を自分で判定できるか。数字か、回数か、状態か。</dd>
+        <dt>A — 手が届く</dt><dd>今の力で6〜8割の確率で届くくらい。簡単すぎても難しすぎても続きません。</dd>
+        <dt>R — つながる</dt><dd>さっきの価値観と繋がっているか。「なぜ」に一言で答えられるか。</dd>
+        <dt>T — 期限</dt><dd>いつまでに。期限のない目標は、永遠に明日から始まります。</dd>
+      </dl>
+      <div class="contrast" style="grid-template-columns:1fr">
+        <div class="pane bad"><span class="plabel">BEFORE</span><p class="q">本をたくさん読む</p></div>
+        <div class="pane good"><span class="plabel">AFTER</span><p class="q">12月末までに、仕事に関する本を12冊読む。<br>週末の朝に30分、必ず開く。</p><p class="note-s">なぜ：人に説明できる知識を増やして、企画を自分から出せるようになりたいから。</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>SMART</span><span>10 / 26</span></div>
+  <div class="note">
+    <p><b>0:21–0:24｜SMART</b></p>
+    <ul>
+      <li>SMART自体は知っている人も多い。知識の紹介ではなく<b>その場で自分の目標を直す道具</b>として渡す。</li>
+      <li>強調するのは A（手が届く）と R（つながる）。高すぎる目標は自信を削り、価値観とズレた目標は達成しても虚しい。</li>
+      <li>BEFORE/AFTER は実際に声に出して読み比べると差が伝わる。「なぜ」の一文がある版とない版の違いも指摘する。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-sec="2" data-start="24" data-title="成果目標と行動目標">
+  <div class="eyebrow"><span class="sec">決める · STEP 3</span><span class="dash"></span><span>11</span></div>
+  <h2 class="s-h sm">コントロールできることを、目標にする</h2>
+  <div class="body">
+    <div class="contrast">
+      <div class="pane bad"><span class="plabel">成果目標 — 北極星</span><p class="q" style="text-decoration:none; color:inherit">TOEIC 800点をとる<br>3kg痩せる<br>契約を10件とる</p><p class="note-s">向かう方角を示してくれますが、結果には運・相手・環境が混ざります。<b>これだけを目標にすると、自分の努力を正しく評価できません。</b></p></div>
+      <div class="pane good"><span class="plabel">行動目標 — ハンドル</span><p class="q">平日は毎朝30分、単語と音読をする<br>週3回、20分歩く<br>毎日、新規に3件連絡する</p><p class="note-s">100%自分で決められます。今日やったかどうかが、寝る前に判定できます。</p></div>
+    </div>
+    <div class="callout"><b>両方持つのが正解です。</b>北極星（成果）で方角を決め、ハンドル（行動）を毎日握る。<br>評価するのはハンドルのほう。成果は、ハンドルを握り続けた結果としてついてきます。</div>
+  </div>
+  <div class="foot"><span>OUTCOME vs PROCESS</span><span>11 / 26</span></div>
+  <div class="note">
+    <p><b>0:24–0:26｜成果目標と行動目標</b></p>
+    <ul>
+      <li>実務でいちばん効く1枚。営業・受験・ダイエット、どの例でも通じる。参加者層に近い例を1つ足すとよい。</li>
+      <li>言い方：「結果は約束できないが、行動は今日から約束できる」。</li>
+      <li>ワーク1では<b>両方書いてもらう</b>ことを、ここで予告しておく。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide" data-sec="2" data-start="26" data-title="WOOP：障害を先に想定する">
+  <div class="eyebrow"><span class="sec">決める · 仕上げ</span><span class="dash"></span><span>12</span></div>
+  <h2 class="s-h sm">前向きに想像するだけでは、動けない</h2>
+  <div class="body">
+    <div class="flow">
+      <div class="flow-step"><span class="n">W — WISH</span><span class="t">願い</span><span class="d">叶えたいことを一言で。</span></div>
+      <div class="flow-step"><span class="n">O — OUTCOME</span><span class="t">叶った場面</span><span class="d">叶った時のいちばんいい場面を、具体的に思い浮かべる。</span></div>
+      <div class="flow-step"><span class="n">O — OBSTACLE</span><span class="t">自分の中の障害</span><span class="d">邪魔をするのは外の事情ではなく、たいてい自分の習慣や気分。</span></div>
+      <div class="flow-step"><span class="n">P — PLAN</span><span class="t">対策</span><span class="d">その障害が来たら何をするかを、前もって決めておく。</span></div>
+    </div>
+    <div class="callout">叶った場面を想像するだけだと、脳は<b>すでに手に入れた気分</b>になって、行動が減ることがあります。<br>「いいイメージ」と「現実の障害」をセットで見るから、動き出せます。</div>
+    <p class="src">参考：エッティンゲンの心理対比（mental contrasting）／WOOP</p>
+  </div>
+  <div class="foot"><span>W O O P</span><span>12 / 26</span></div>
+  <div class="note">
+    <p><b>0:26–0:28｜WOOP</b></p>
+    <ul>
+      <li>ここは意外性のある話なので、ひと呼吸おいて伝える。「ポジティブ思考だけだと逆効果になることがある」は多くの人にとって新情報。</li>
+      <li>3つ目の O（自分の中の障害）を強調。外的要因（忙しい、会社が悪い）で止めると対策が作れない。</li>
+      <li>P はこのあと扱う If-Then そのもの。次のワーク1では W と O まで、ワーク2で P をつくる——と役割分担を言っておく。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide is-work" data-sec="2" data-start="28" data-title="ワーク1：目標を1つ書く">
+  <div class="eyebrow"><span class="sec">ワーク 1</span><span class="dash"></span><span>13</span></div>
+  <div class="work-head"><h2 class="s-h sm">目標を、ひとつ書く</h2><span class="pill">5 MIN · 個人</span></div>
+  <div class="body">
+    <div class="tmpl">
+      私は <u></u> までに、<u></u> を <u></u> する。<br>
+      そのために、<u></u> を <u></u> 回／週やる。<br>
+      なぜなら <u></u> だから。
+    </div>
+    <ul class="list">
+      <li>1行目が<b>成果（北極星）</b>、2行目が<b>行動（ハンドル）</b>、3行目が<b>価値観とのつながり</b>です。</li>
+      <li>大きな目標でなくて構いません。<b>3ヶ月で判定できる大きさ</b>がおすすめです。</li>
+      <li>思いつかない人へ：「去年からずっと気になっていて、手をつけていないこと」を書いてください。</li>
+    </ul>
+  </div>
+  <div class="foot"><span>WORK 01</span><span>13 / 26</span></div>
+  <div class="note">
+    <p><b>0:28–0:32｜ワーク1（記入4分＋共有1分）</b></p>
+    <ul>
+      <li>タイマーを見せて「4分後に止めます」と宣言してから始める。講師は歩き回って、手が止まっている人に声をかける。</li>
+      <li>止まっている人への声かけ：「完璧じゃなくていいです、あとで直せます」「3ヶ月で終わる大きさに小さくしましょう」</li>
+      <li>残り1分で、希望者1〜2名に読み上げてもらう（任意・強制しない）。読み上げてもらったら、SMARTのどこが良いかを具体的に褒める。</li>
+      <li><b>時間管理の要所。</b>ここで押すと後半が崩れるので、4分で必ず切る。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide" data-sec="3" data-start="32" data-title="逆算：明日まで降ろす">
+  <div class="eyebrow"><span class="sec">叶える</span><span class="dash"></span><span>14</span></div>
+  <h2 class="s-h sm">明日まで降りてこない目標は、まだ目標ではない</h2>
+  <div class="body">
+    <div class="flow">
+      <div class="flow-step"><span class="n">1 YEAR</span><span class="t">1年後</span><span class="d">ありたい姿に近い状態</span></div>
+      <div class="flow-step"><span class="n">3 MONTHS</span><span class="t">3ヶ月後</span><span class="d">達成が判定できる中間地点</span></div>
+      <div class="flow-step"><span class="n">THIS MONTH</span><span class="t">今月</span><span class="d">3ヶ月を3等分した1つ目</span></div>
+      <div class="flow-step"><span class="n">THIS WEEK</span><span class="t">今週</span><span class="d">やることは3つまで</span></div>
+      <div class="flow-step"><span class="n">TOMORROW</span><span class="t">明日</span><span class="d">カレンダーに入る、時間つきの1つ</span></div>
+    </div>
+    <div class="callout">降ろす時のコツは <b>「3ヶ月」を起点にすること</b>。1年は遠すぎて実感がなく、1ヶ月は短すぎて変化が出ません。<br>3ヶ月なら、途中で修正もできます。</div>
+  </div>
+  <div class="foot"><span>BREAK DOWN</span><span>14 / 26</span></div>
+  <div class="note">
+    <p><b>0:32–0:36｜逆算</b></p>
+    <ul>
+      <li>後半の入口。ここから「決める」から「動かす」に切り替わることを宣言する。</li>
+      <li>ワーク1で書いた目標を見ながら聞いてもらう。「いま書いた目標、明日やることまで降りますか？」</li>
+      <li>今週は<b>3つまで</b>が重要。多く書くほど実行率が落ちる。5つ書いた人は2つ消す、くらい強く言ってよい。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-sec="3" data-start="36" data-title="If-Thenで決めておく">
+  <div class="eyebrow"><span class="sec">叶える · 道具 1</span><span class="dash"></span><span>15</span></div>
+  <h2 class="s-h sm">「もし◯◯したら、△△する」を先に決めておく</h2>
+  <div class="body">
+    <div class="cards">
+      <div class="card"><span class="tag">① 実行の If-Then</span><h3>いつ・どこでやるか</h3><p>「朝、コーヒーを淹れたら、机で15分書く」<br>「駅に着いたら、アプリを開いて単語を10問やる」</p></div>
+      <div class="card"><span class="tag">② 障害の If-Then</span><h3>邪魔が来た時どうするか</h3><p>「残業で帰りが21時を過ぎたら、5分版に切り替える」<br>「誘われたら、翌朝に振り替えてから行く」</p></div>
+      <div class="card"><span class="tag">③ 再開の If-Then</span><h3>途切れた時どう戻るか</h3><p>「2日空いたら、次の日曜9時に必ず再開する」<br>「できなかった週は、日曜に5分だけやって記録を戻す」</p></div>
+    </div>
+    <div class="callout">この形式の強みは、<b>その場で判断しなくてよくなること</b>。<br>疲れている自分に判断させず、元気なうちの自分が決めておきます。</div>
+  </div>
+  <div class="foot"><span>IF–THEN</span><span>15 / 26</span></div>
+  <div class="note">
+    <p><b>0:36–0:39｜If-Thenプランニング</b></p>
+    <ul>
+      <li>今日の実践パートの中心。③（再開）は普通のIf-Then解説には出てこないが、落とし穴③の解決策なので必ず扱う。</li>
+      <li>「決めておく」＝紙に書く・カレンダーに入れる、まで含めて初めて効くと伝える。頭の中だけは決めたことにならない。</li>
+      <li>ワーク2でこの3つを書いてもらうので、例は具体的に読み上げる。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide" data-sec="3" data-start="39" data-title="始めるハードルを下げる">
+  <div class="eyebrow"><span class="sec">叶える · 道具 2</span><span class="dash"></span><span>16</span></div>
+  <h2 class="s-h sm">始めるハードルを、ばかばかしいほど下げる</h2>
+  <div class="body">
+    <div class="grid2">
+      <ul class="list">
+        <li><b>2分ルール：</b>目標の行動を「2分で終わる入口」に書き換えます。「30分走る」→「靴を履いて外に出る」。「本を読む」→「1ページ開く」。</li>
+        <li>入口を通れば、たいてい続きます。<b>難しいのは継続ではなく着手</b>だからです。</li>
+        <li><b>既にある習慣の直後に置く：</b>「歯を磨いたら」「PCを開いたら」「昼食のあと」。新しい時間を探すより、既存の習慣にくっつけるほうが定着します。</li>
+      </ul>
+      <div class="card">
+        <span class="tag">書き換えの例</span>
+        <h3>毎日1時間、勉強する</h3>
+        <p>↓</p>
+        <h3>PCを開いたら、教材を開いて1問だけ解く</h3>
+        <p>1問で終わってもその日は「できた日」。それでも記録は途切れません。多くの日は、1問では終わらなくなります。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>2-MINUTE RULE</span><span>16 / 26</span></div>
+  <div class="note">
+    <p><b>0:39–0:41｜小さく始める</b></p>
+    <ul>
+      <li>よくある反論に先回りする：「1問で意味あるの？」→「1問の日を作れる人だけが、100問の日にたどり着きます」。</li>
+      <li>「やる気は着手の後から出る」（05枚目の種）をここで回収する。</li>
+      <li>参加者に自分の目標の2分版を頭の中で作ってもらう（口頭のみ、書かせない）。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 17 -->
+<section class="slide" data-sec="3" data-start="41" data-title="意志より環境">
+  <div class="eyebrow"><span class="sec">叶える · 道具 3</span><span class="dash"></span><span>17</span></div>
+  <h2 class="s-h sm">意志ではなく、環境を変える</h2>
+  <div class="body">
+    <div class="contrast">
+      <div class="pane good"><span class="plabel">やりたいこと — 20秒 近づける</span><p class="q" style="font-size:.95em">教材を机に開いたまま置いて寝る<br>ランニングウェアを着て寝る<br>アプリをホーム画面の1ページ目に置く</p><p class="note-s">始めるまでの手数を減らすほど、実行率は上がります。</p></div>
+      <div class="pane bad"><span class="plabel">やめたいこと — 20秒 遠ざける</span><p class="q" style="text-decoration:none; color:inherit; font-size:.95em">スマホを別の部屋で充電する<br>SNSアプリをログアウトしておく<br>お菓子を買い置きしない</p><p class="note-s">誘惑と戦うのではなく、出会わないようにします。</p></div>
+    </div>
+    <div class="callout"><b>意志力は、環境設計の失敗を補うために使うもの</b>ではありません。<br>使う回数が少ないほど、目標は長持ちします。</div>
+  </div>
+  <div class="foot"><span>ENVIRONMENT</span><span>17 / 26</span></div>
+  <div class="note">
+    <p><b>0:41–0:43｜環境設計</b></p>
+    <ul>
+      <li>笑いが取れる箇所。「ウェアを着て寝る」は実例として強い。講師自身の工夫を1つ話すと場が和む。</li>
+      <li>ポイントは対称性：やりたいことは近づけ、やめたいことは遠ざける。どちらも「20秒」の手数で考える。</li>
+      <li>参加者に一つだけ決めてもらう：「今夜、帰ったら動かすモノは何ですか？」</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 18 -->
+<section class="slide" data-sec="3" data-start="43" data-title="記録すると続く">
+  <div class="eyebrow"><span class="sec">叶える · 道具 4</span><span class="dash"></span><span>18</span></div>
+  <h2 class="s-h sm">見えるものは、続く</h2>
+  <div class="body">
+    <ul class="list">
+      <li><b>やり方は何でもいい。</b>カレンダーに×印、手帳に正の字、アプリのチェック。凝った仕組みほど続きません。</li>
+      <li><b>記録するのは行動だけ。</b>体重や点数（成果）ではなく、やったかどうか（ハンドル）を記録します。成果は毎日は動きません。</li>
+      <li><b>週に1回、眺める。</b>記録は貯めるためではなく、見るためのもの。見て初めてフィードバックになります（07枚目の「具体性＋フィードバック」）。</li>
+      <li><b>連続記録は目的ではない。</b>途切れた日は空欄にして、次の日から続けます。空欄は失敗の証拠ではなく、ただのデータです。</li>
+    </ul>
+    <div class="callout">記録があると、しんどい日に<b>「ここまでやってきた自分」</b>が見えます。<br>やめる判断をするのは、たいてい記録を見ていない日です。</div>
+  </div>
+  <div class="foot"><span>TRACKING</span><span>18 / 26</span></div>
+  <div class="note">
+    <p><b>0:43–0:45｜記録</b></p>
+    <ul>
+      <li>凝ったツールの紹介はしない。手段の話に流れると時間を失う。「紙のカレンダーに×で十分」と言い切る。</li>
+      <li>「記録するのは行動だけ」は11枚目（成果とハンドル）の実務版。ここで対応づけると納得感が出る。</li>
+      <li>次がワーク2。残り時間を確認して、押していれば説明を巻いてワークに入る。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="slide is-work" data-sec="3" data-start="45" data-title="ワーク2：If-Thenを3つ作る">
+  <div class="eyebrow"><span class="sec">ワーク 2</span><span class="dash"></span><span>19</span></div>
+  <div class="work-head"><h2 class="s-h sm">If-Then を、3つ書く</h2><span class="pill">5 MIN · 個人 → ペア</span></div>
+  <div class="body">
+    <div class="tmpl" style="font-size:1.02em; line-height:1.95">
+      ① 実行：もし <u></u> したら、<u></u> をする。<br>
+      ② 障害：もし <u></u> になったら、<u></u> に切り替える。<br>
+      ③ 再開：もし <u></u> 日できなかったら、<u></u> に必ず再開する。
+    </div>
+    <ul class="list">
+      <li>①は<b>時刻ではなく出来事</b>で書くと精度が上がります（「7時に」より「コーヒーを淹れたら」）。</li>
+      <li>②の障害は、<b>前回うまくいかなかった時の理由</b>をそのまま使ってください。</li>
+      <li>書けたら、隣の人と1分ずつ読み合わせ。声に出すと、無理のある計画はすぐ分かります。</li>
+    </ul>
+  </div>
+  <div class="foot"><span>WORK 02</span><span>19 / 26</span></div>
+  <div class="note">
+    <p><b>0:45–0:48｜ワーク2（記入3分＋ペア共有2分）</b></p>
+    <ul>
+      <li>3つ埋まらなくてもよい。<b>③（再開）だけは全員に書いてもらう</b>——今日いちばん持ち帰ってほしい一行。</li>
+      <li>ペア共有は「感想を言わない・直さない、聞くだけ」とルールを決めると安全で速い。</li>
+      <li>一人参加・オンラインの場合は、チャットに①だけ貼ってもらう形に置き換える。</li>
+      <li>ここも時間厳守。48分で次へ。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 20 -->
+<section class="slide" data-sec="4" data-start="48" data-title="週次レビュー15分">
+  <div class="eyebrow"><span class="sec">折れない</span><span class="dash"></span><span>20</span></div>
+  <h2 class="s-h sm">週に15分だけ、立ち止まる</h2>
+  <div class="body">
+    <div class="cards">
+      <div class="card"><span class="tag">問い 1</span><h3>今週、進んだことは？</h3><p>小さくても書く。進んだ実感が、来週の燃料になります。</p></div>
+      <div class="card"><span class="tag">問い 2</span><h3>止まったのは、なぜ？</h3><p>自分を責めるためではなく、<b>計画のどこが現実と合わなかったか</b>を探すため。</p></div>
+      <div class="card"><span class="tag">問い 3</span><h3>来週やる3つは？</h3><p>4つ以上書かない。3つに絞ることが、いちばん難しくて、いちばん効きます。</p></div>
+    </div>
+    <div class="callout">レビュー自体も <b>If-Then で固定します</b>。「日曜の朝、コーヒーを淹れたら、15分レビューする」。<br>曜日と時間が決まっていないレビューは、一度もやらないまま年末を迎えます。</div>
+  </div>
+  <div class="foot"><span>WEEKLY REVIEW</span><span>20 / 26</span></div>
+  <div class="note">
+    <p><b>0:48–0:51｜週次レビュー</b></p>
+    <ul>
+      <li>「15分」という短さを強調。1時間の振り返りは続かない。</li>
+      <li>問い2は言い方が大事。「原因は自分の性格ではなく、計画の側にある」という前提を毎回繰り返す。</li>
+      <li>その場で曜日と時刻を決めてもらい、スマホの繰り返し予定に入れてもらうと実行率が上がる（30秒あげる）。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 21 -->
+<section class="slide" data-sec="4" data-start="51" data-title="つまずいた日の扱い方">
+  <div class="eyebrow"><span class="sec">折れない</span><span class="dash"></span><span>21</span></div>
+  <h2 class="s-h sm">つまずいた日を、どう扱うか</h2>
+  <div class="body">
+    <div class="grid2">
+      <ul class="list">
+        <li><b>ルールはひとつ。「2回続けて休まない」。</b>1回休むのは想定内。2回続くと、休むこと自体が新しい習慣になります。</li>
+        <li><b>失敗はデータとして扱う。</b>「意志が弱い」で終わらせると次に活かせません。「金曜の夜は無理」と分かったなら、金曜を外せばいいだけです。</li>
+        <li><b>自分を責めない。</b>強く責めるほど、その行動から目を背けたくなり、再開が遠のきます。</li>
+      </ul>
+      <div class="card">
+        <span class="tag">言い換えの練習</span>
+        <h3>「また続かなかった。自分はダメだ」</h3>
+        <p>↓</p>
+        <h3>「平日夜は無理だと分かった。朝に移して、来週試す」</h3>
+        <p>同じ出来事でも、後者は<b>次の一手が出てきます</b>。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>RECOVERY</span><span>21 / 26</span></div>
+  <div class="note">
+    <p><b>0:51–0:53｜つまずきの扱い</b></p>
+    <ul>
+      <li>落とし穴③の回収。「10日のうち1日休んだ話、覚えていますか」と冒頭に戻る。</li>
+      <li>「2回続けて休まない」は今日の持ち帰りフレーズ。板書するか、ゆっくり2回言う。</li>
+      <li>言い換えの練習は、参加者に一度声に出してもらうと定着する。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 22 -->
+<section class="slide" data-sec="4" data-start="53" data-title="目標は変えていい">
+  <div class="eyebrow"><span class="sec">折れない</span><span class="dash"></span><span>22</span></div>
+  <h2 class="s-h sm">目標は、変えていい</h2>
+  <div class="body">
+    <p class="lead">続けることが目的ではありません。<b>ありたい姿に近づくこと</b>が目的です。手放す判断も、立派な前進です。</p>
+    <div class="cards">
+      <div class="card"><span class="tag">価値観とズレていた</span><h3>やめる（正しい撤退）</h3><p>「なぜ」に答えられない目標は、続けても報われません。やめた理由を1行残して、次へ。</p></div>
+      <div class="card"><span class="tag">しんどいだけ</span><h3>小さくする</h3><p>目標は正しいが、量が現実と合っていない状態。半分にして、まず続ける形に戻します。</p></div>
+      <div class="card"><span class="tag">飽きた</span><h3>手段を変える</h3><p>目的は同じでも、やり方は替えがききます。教材を変える、場所を変える、人と一緒にやる。</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>REVISE</span><span>22 / 26</span></div>
+  <div class="note">
+    <p><b>0:53–0:55｜変える判断</b></p>
+    <ul>
+      <li>ここで参加者の肩の力を抜く。「決めたら絶対やり抜け」と言わないことが、この講義の姿勢。</li>
+      <li>見分け方の順番：まず「なぜ」に答えられるか。答えられるなら量の問題か手段の問題。答えられないなら撤退。</li>
+      <li>撤退にも記録を残す（1行）のがポイント。同じ目標を来年また立てて、また挫折するのを防ぐ。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 23 -->
+<section class="slide" data-sec="4" data-start="55" data-title="一人でやらない">
+  <div class="eyebrow"><span class="sec">折れない</span><span class="dash"></span><span>23</span></div>
+  <h2 class="s-h sm">一人でやらない</h2>
+  <div class="body">
+    <div class="cards">
+      <div class="card"><span class="tag">宣言する</span><h3>1人に、口に出す</h3><p>SNSに広く書くより、身近な1人に言うほうが効きます。今日ペアになった人でも構いません。</p></div>
+      <div class="card"><span class="tag">報告する</span><h3>週1回、結果だけ送る</h3><p>アドバイスはいりません。「今週3回できた」の一言を送る相手がいるだけで、実行率は変わります。</p></div>
+      <div class="card"><span class="tag">一緒にやる</span><h3>同じ時間に、同じ場所で</h3><p>内容が違っても構いません。人がいると始められる、という効果は侮れません。</p></div>
+    </div>
+    <div class="callout">自分の意志を当てにしない設計を、ここまで4つ紹介しました。<br><b>If-Then・小さな入口・環境・他者。</b>どれも「頑張る」の代わりに置くものです。</div>
+  </div>
+  <div class="foot"><span>WITH OTHERS</span><span>23 / 26</span></div>
+  <div class="note">
+    <p><b>0:55–0:56｜他者を使う（巻きで可）</b></p>
+    <ul>
+      <li>時間が押していたらこの1枚は30秒で流す。カットしても全体は成立する。</li>
+      <li>その場でできること：ワーク2でペアになった人と連絡先を交換し、来週1回だけ報告し合う約束をしてもらう。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 24 -->
+<section class="slide" data-sec="5" data-start="56" data-title="今日の5つ">
+  <div class="eyebrow"><span class="sec">まとめ</span><span class="dash"></span><span>24</span></div>
+  <h2 class="s-h sm">今日の5つ</h2>
+  <div class="body">
+    <dl class="kv" style="font-size:1em">
+      <dt>01</dt><dd><b style="color:var(--ink)">願望を、目標に変える。</b>期限と数字が入って、はじめて振り返れます。</dd>
+      <dt>02</dt><dd><b style="color:var(--ink)">成果ではなく、行動をハンドルにする。</b>評価するのは、自分で決められることだけ。</dd>
+      <dt>03</dt><dd><b style="color:var(--ink)">明日まで降ろす。</b>3ヶ月 → 今週の3つ → 明日の1つ。</dd>
+      <dt>04</dt><dd><b style="color:var(--ink)">If-Then で、判断を減らす。</b>疲れた自分に、決めさせない。</dd>
+      <dt>05</dt><dd><b style="color:var(--ink)">途切れたら、戻る。</b>2回続けて休まない。それだけで大半の目標は生き残ります。</dd>
+    </dl>
+  </div>
+  <div class="foot"><span>SUMMARY</span><span>24 / 26</span></div>
+  <div class="note">
+    <p><b>0:56–0:57｜まとめ</b></p>
+    <ul>
+      <li>読み上げるだけでよい。新しい情報は足さない。</li>
+      <li>参加者に「この中で、自分に一番効きそうなのはどれですか」と心の中で選んでもらってから次のワークへ。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 25 -->
+<section class="slide is-work" data-sec="5" data-start="57" data-title="ワーク3：明日やる1つ">
+  <div class="eyebrow"><span class="sec">ワーク 3</span><span class="dash"></span><span>25</span></div>
+  <div class="work-head"><h2 class="s-h sm">明日やる「たった1つ」を決める</h2><span class="pill">2 MIN · 個人</span></div>
+  <div class="body">
+    <div class="tmpl" style="font-size:1.25em">
+      明日、<u></u> 時に、<u></u> を、<u></u> 分だけやる。
+    </div>
+    <ul class="list">
+      <li>大きくしないでください。<b>2分で終わる入口</b>で構いません。</li>
+      <li>書いたら、その場で<b>スマホのカレンダーに入れてください</b>。通知が、明日のあなたに代わりに判断してくれます。</li>
+      <li>これが、今日この部屋を出たあと最初に起きる、たった1つの変化です。</li>
+    </ul>
+  </div>
+  <div class="foot"><span>WORK 03</span><span>25 / 26</span></div>
+  <div class="note">
+    <p><b>0:57–0:59｜ワーク3（2分）</b></p>
+    <ul>
+      <li><b>カレンダー登録まで、その場でやってもらう。</b>ここを口頭の「あとでやります」で終わらせない。実際にスマホを出す時間を作る。</li>
+      <li>講師も一緒に登録して見せると、やらない人が減る。</li>
+      <li>終わったら「入れた人？」と挙手で確認して、拍手で締める。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 26 -->
+<section class="slide" data-sec="5" data-start="59" data-title="締め">
+  <div class="eyebrow"><span class="sec">まとめ</span><span class="dash"></span><span>26</span></div>
+  <div class="bigq">
+    <p class="q">目標は、意志で叶えるものではなく、<br>設計で叶えるもの。</p>
+    <p class="sub">今日つくった設計を、日曜の15分だけ、見直してください。</p>
+  </div>
+  <div class="foot"><span>THANK YOU</span><span>26 / 26</span></div>
+  <div class="note">
+    <p><b>0:59–1:00｜締め</b></p>
+    <ul>
+      <li>最後に持ち帰りを3点だけ確認：①書いた目標 ②再開のIf-Then ③明日の1つ（カレンダー登録済み）。</li>
+      <li>「3ヶ月後にまた集まれたら、続いたかどうかを聞かせてください」と次につなげる一言があると余韻が残る。</li>
+      <li>質疑は時間外で。終了時刻は必ず守る。</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<div class="notes" id="notes">
+  <div class="notes-inner">
+    <span class="notes-label">講師ノート</span>
+    <div id="noteBody"></div>
+  </div>
+</div>
+
+<nav class="rail" id="rail" aria-label="進行"></nav>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-in">
+    <h2>目次 — 全26枚 / 60分</h2>
+    <div id="olBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var SECS = [
+    {name:'導入', from:0, to:5},
+    {name:'なぜ叶わないのか', from:5, to:15},
+    {name:'決める', from:15, to:32},
+    {name:'叶える', from:32, to:48},
+    {name:'折れない', from:48, to:56},
+    {name:'まとめ', from:56, to:60}
+  ];
+  var TOTAL = 60;
+  var cur = 0;
+
+  /* ---- rail ---- */
+  var rail = document.getElementById('rail');
+  SECS.forEach(function(s, i){
+    var b = document.createElement('button');
+    b.className = 'seg';
+    b.style.flex = (s.to - s.from) + ' 1 0';
+    b.innerHTML = '<span class="bar"><i></i></span><span class="lbl"><span class="mn">' + s.from + '</span> ' + s.name + '</span>';
+    b.addEventListener('click', function(){
+      for (var k = 0; k < slides.length; k++){
+        if (+slides[k].dataset.sec === i){ go(k); break; }
+      }
+    });
+    rail.appendChild(b);
+  });
+  var segs = Array.prototype.slice.call(rail.children);
+
+  /* ---- outline ---- */
+  var olBody = document.getElementById('olBody');
+  SECS.forEach(function(s, i){
+    var wrap = document.createElement('div');
+    wrap.className = 'ol-sec';
+    var h = document.createElement('h3');
+    h.textContent = s.name + '  ' + s.from + '–' + s.to + ' 分';
+    wrap.appendChild(h);
+    slides.forEach(function(sl, idx){
+      if (+sl.dataset.sec !== i) return;
+      var b = document.createElement('button');
+      b.className = 'ol-item';
+      b.dataset.idx = idx;
+      b.innerHTML = '<span class="no">' + String(idx + 1).padStart(2, '0') + '</span>' +
+                    '<span class="at">' + sl.dataset.start + '分</span>' +
+                    '<span class="tt">' + sl.dataset.title + '</span>';
+      b.addEventListener('click', function(){ go(idx); closeSheet(); });
+      wrap.appendChild(b);
+    });
+    olBody.appendChild(wrap);
+  });
+  var olItems = Array.prototype.slice.call(olBody.querySelectorAll('.ol-item'));
+
+  /* ---- navigation ---- */
+  var noteBody = document.getElementById('noteBody');
+  function go(i){
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function(s, k){ s.hidden = (k !== cur); });
+    var sl = slides[cur];
+    var sec = +sl.dataset.sec;
+    var start = +sl.dataset.start;
+    segs.forEach(function(seg, k){
+      seg.classList.toggle('now', k === sec);
+      seg.classList.toggle('done', k < sec);
+      var fill = seg.querySelector('i');
+      if (k < sec) fill.style.width = '100%';
+      else if (k > sec) fill.style.width = '0%';
+      else {
+        var s = SECS[k];
+        fill.style.width = Math.max(6, Math.min(100, ((start - s.from) / (s.to - s.from)) * 100)) + '%';
+      }
+    });
+    olItems.forEach(function(b){ b.classList.toggle('cur', +b.dataset.idx === cur); });
+    var n = sl.querySelector('.note');
+    noteBody.innerHTML = n ? n.innerHTML : '';
+    document.getElementById('stage').scrollTop = 0;
+    tick();
+  }
+  slides.forEach(function(s){
+    var n = s.querySelector('.note');
+    if (n) n.hidden = true;
+  });
+
+  document.getElementById('btnNext').addEventListener('click', function(){ go(cur + 1); });
+  document.getElementById('btnPrev').addEventListener('click', function(){ go(cur - 1); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { e.preventDefault(); go(cur + 1); }
+    else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); go(cur - 1); }
+    else if (k === 'Home') { e.preventDefault(); go(0); }
+    else if (k === 'End') { e.preventDefault(); go(slides.length - 1); }
+    else if (k === 'n' || k === 'N') { toggleNotes(); }
+    else if (k === 'o' || k === 'O') { sheet.hidden ? openSheet() : closeSheet(); }
+    else if (k === 'Escape') { closeSheet(); }
+  });
+
+  /* ---- notes toggle ---- */
+  var btnNotes = document.getElementById('btnNotes');
+  function setNotes(on){
+    document.body.classList.toggle('notes-on', on);
+    btnNotes.setAttribute('aria-pressed', on ? 'true' : 'false');
+    try { localStorage.setItem('gs-notes', on ? '1' : '0'); } catch (err) {}
+  }
+  function toggleNotes(){ setNotes(!document.body.classList.contains('notes-on')); }
+  btnNotes.addEventListener('click', toggleNotes);
+  var saved = '1';
+  try { var v = localStorage.getItem('gs-notes'); if (v !== null) saved = v; } catch (err) {}
+  setNotes(saved === '1');
+
+  /* ---- outline sheet ---- */
+  var sheet = document.getElementById('sheet');
+  function openSheet(){ sheet.hidden = false; }
+  function closeSheet(){ sheet.hidden = true; }
+  document.getElementById('btnOutline').addEventListener('click', function(){ sheet.hidden ? openSheet() : closeSheet(); });
+  sheet.addEventListener('click', function(e){ if (e.target === sheet) closeSheet(); });
+
+  /* ---- timer ---- */
+  var running = false, t0 = 0, elapsed = 0;
+  var clock = document.getElementById('clock');
+  var clockT = document.getElementById('clockT');
+  var clockD = document.getElementById('clockD');
+  var btnTimer = document.getElementById('btnTimer');
+  function mmss(sec){
+    var neg = sec < 0; sec = Math.abs(Math.round(sec));
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return (neg ? '-' : '') + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+  function now(){ return elapsed + (running ? (Date.now() - t0) / 1000 : 0); }
+  function tick(){
+    var e = now();
+    clockT.textContent = mmss(e);
+    if (!running && e === 0){ clockD.textContent = '開始前'; clock.className = 'clock'; return; }
+    var target = (+slides[cur].dataset.start) * 60;
+    var diff = e - target;
+    clock.className = 'clock ' + (diff > 60 ? 'late' : (diff < -60 ? 'early' : ''));
+    clockD.textContent = (diff >= 0 ? '+' : '') + mmss(diff) + (diff > 60 ? ' 遅れ' : (diff < -60 ? ' 早い' : ' 予定どおり'));
+  }
+  btnTimer.addEventListener('click', function(){
+    if (running){ elapsed = now(); running = false; btnTimer.textContent = '▶ 再開'; }
+    else { t0 = Date.now(); running = true; btnTimer.textContent = '❚❚ 停止'; }
+    tick();
+  });
+  setInterval(tick, 1000);
+
+  go(0);
+})();
+</script>
