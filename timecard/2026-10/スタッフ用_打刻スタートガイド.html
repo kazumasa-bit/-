@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>打刻スタートガイド</title>
+<style>
+  :root { --ink:#1a1a1a; --sub:#555; --line:#ccc; --accent:#c0392b; --bg:#fff; --soft:#f4f4f4; }
+  @page { size: A4; margin: 12mm; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--ink);
+         font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif; font-size:13px; line-height:1.5; }
+  .page { max-width:186mm; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; border-bottom:3px solid var(--ink); padding-bottom:4px; }
+  .meta { color:var(--sub); margin:0 0 10px; }
+  h2 { font-size:15px; margin:14px 0 6px; padding:3px 8px; background:var(--ink); color:#fff; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { border:1px solid var(--line); padding:4px 6px; text-align:left; vertical-align:top; }
+  th { background:var(--soft); }
+  td.chk { width:40px; text-align:center; font-size:16px; }
+  td.n { width:24px; text-align:center; }
+  code, .url { font-family:ui-monospace,Menlo,monospace; background:var(--soft); padding:0 4px; word-break:break-all; }
+  .warn { color:var(--accent); font-weight:bold; }
+  ol { margin:4px 0; padding-left:22px; }
+  ul { margin:4px 0; padding-left:20px; }
+  .foot { margin-top:12px; padding:6px 8px; border:2px solid var(--ink); font-weight:bold; }
+  @media print { body { padding:0; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>10月1日から、出勤・退勤は「打刻」になります</h1>
+  <p class="meta">対象：全店・全スタッフ（アルバイト含む）／開始：2026年10月1日（木）の出勤から／店の端末で押すだけ</p>
+
+  <h2>① 9月30日までにやること（1回だけ）</h2>
+  <table>
+    <tr><th>#</th><th>やること</th><th>✓</th></tr>
+    <tr><td class="n">1</td><td>LINEで「Raportグループ本部アカウント」を友だち追加（ID：<b>@206pjvpw</b>）</td><td class="chk">□</td></tr>
+    <tr><td class="n">2</td><td><b>1対1のトーク</b>で <code>登録 自分の名前</code> を1回だけ送る　例）<code>登録 井上来夢</code></td><td class="chk">□</td></tr>
+    <tr><td class="n">3</td><td>メニューに「勤怠」が出ることを確認</td><td class="chk">□</td></tr>
+    <tr><td class="n">4</td><td>店長から<b>仮のPIN（4桁）</b>を受け取る</td><td class="chk">□</td></tr>
+    <tr><td class="n">5</td><td>打刻画面の「PINを変える」で、自分だけの4桁に変える<br><small>使えない：0000・1111など同じ数字／1234・9876など並び／他の人と同じ4桁</small></td><td class="chk">□</td></tr>
+    <tr><td class="n">6</td><td>店長と一緒に、<b>顔を写して</b>テスト打刻してみる</td><td class="chk">□</td></tr>
+  </table>
+  <p class="warn">⚠ グループトークでは登録できません。必ず1対1で送ってください。</p>
+
+  <h2>② 10月1日からの毎日</h2>
+  <p><b>店の端末で</b> <span class="url">https://raport-dakoku.netlify.app/</span> を開いて</p>
+  <ol>
+    <li>自分の名前を選ぶ</li>
+    <li>PIN（4桁）を入れる</li>
+    <li><b>カメラに顔を写す</b></li>
+    <li>「出勤」または「退勤」を押す</li>
+  </ol>
+  <ul>
+    <li><b>休憩はボタン不要</b>。自動で引かれます（6時間超→45分／8時間超→60分）</li>
+    <li>打刻はスマホからではなく、<b>店の端末で</b>押します</li>
+    <li>3分以内の二度押しは自動で取り消されます</li>
+  </ul>
+
+  <h2>③ 必ず守ること</h2>
+  <table>
+    <tr><th>ルール</th><th>守らないと</th></tr>
+    <tr><td><b>顔を写して押す</b></td><td>「写真なし」は要確認。確認できなければ<span class="warn">その日の出勤は認められません</span></td></tr>
+    <tr><td><b>PINは人に教えない・代わりに押さない</b></td><td>ルール違反になります</td></tr>
+    <tr><td><b>休憩が取れなかった日は、その日のうちに店長へ</b></td><td>黙っていると、働いた分が消えます</td></tr>
+    <tr><td><b>押し忘れ・間違いに気づいたら店長へ</b></td><td>自分では直せません。店長が直します</td></tr>
+  </table>
+
+  <h2>④ LINEでできること（「勤怠」メニュー）</h2>
+  <ul>
+    <li>自分のタイムカードを見る（自分のぶんだけ。URLは人に送らない）</li>
+    <li>有給の残りを見る</li>
+    <li>有給を申請する（理由は書かなくてOK。急な休みはまず店長に電話・LINE）</li>
+  </ul>
+
+  <div class="foot">困ったら、まず店長へ。店長が不在・店長本人のことは本部（井澤）へ。</div>
+</div>
+</body>
+</html>
