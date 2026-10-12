@@ -1,0 +1,525 @@
+<title>おいしい写真ドリル</title>
+<meta name="description" content="iPhoneで、カフェごはんがもっとおいしそうに撮れる">
+<meta name="theme-color" content="#c8325a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="おいしい写真">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{--v-accent:#c8325a;--v-accent-dark:#ff7a9a}
+/* Layout: one-column phone app. Viewfinder card for the next mission, chapters as film strips, missions open as a bottom sheet. Version colors come from --accent (set per drill). */
+:root{
+  --bg:#f6f4f2;
+  --surface:#ffffff;
+  --ink:#1f2326;
+  --muted:#636a70;
+  --line:#e2dfdc;
+  --focus:#ffcc00;
+  --focus-ink:#3a2f00;
+  --accent:var(--v-accent);
+  --accent-ink:#ffffff;
+  --done:#2f8a4e;
+  --shade:rgba(20,22,24,.45);
+  --display:"Dela Gothic One","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131517;--surface:#1c1f22;--ink:#eceeef;--muted:#a0a7ad;--line:#2d3236;
+  --focus:#ffd426;--focus-ink:#2b2300;--accent:var(--v-accent-dark);--accent-ink:#141618;--done:#5cc47e;--shade:rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131517;--surface:#1c1f22;--ink:#eceeef;--muted:#a0a7ad;--line:#2d3236;
+  --focus:#ffd426;--focus-ink:#2b2300;--accent:var(--v-accent-dark);--accent-ink:#141618;--done:#5cc47e;--shade:rgba(0,0,0,.6);color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7;-webkit-text-size-adjust:100%;font-weight:500}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:18px 72px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{margin:0;text-wrap:balance}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+a{color:var(--accent)}
+
+.top{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;flex:none;border-radius:11px;background:var(--accent);position:relative}
+.logo::before{content:"";position:absolute;inset:11px;border:2.5px solid var(--focus);border-radius:2px}
+.brand{min-width:0}
+.brand h1{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.25;letter-spacing:.02em}
+.brand p{margin:0;font-size:12px;color:var(--muted)}
+
+.welcome{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.welcome h2{font-size:17px}
+.welcome p{margin:6px 0 12px;font-size:14px;color:var(--muted)}
+.welcome ol{margin:0 0 12px;padding-left:1.3em;font-size:14px}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .n{font-family:var(--mono);font-weight:700;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat .l{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+
+.vf{position:relative;padding:22px 20px 20px;background:var(--surface);border-radius:4px}
+.vf .k{position:absolute;width:22px;height:22px;border:3px solid var(--focus)}
+.vf .k1{top:0;left:0;border-right:0;border-bottom:0}.vf .k2{top:0;right:0;border-left:0;border-bottom:0}
+.vf .k3{bottom:0;left:0;border-right:0;border-top:0}.vf .k4{bottom:0;right:0;border-left:0;border-top:0}
+.lock-label{display:inline-block;background:var(--focus);color:var(--focus-ink);font-size:11px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:3px}
+.vf h2{font-size:19px;margin-top:10px;line-height:1.5}
+.vf p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+.meta{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:999px;padding:11px 22px;font-weight:700;cursor:pointer;background:var(--accent);color:var(--accent-ink);text-decoration:none}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.wide{width:100%}
+.btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
+
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.sec-h h2{font-size:17px}
+.filter{display:flex;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chapters{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+.ch{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.ch-h{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 14px 10px}
+.ch-no{font-family:var(--mono);font-weight:700;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:3px 7px}
+.ch-t{font-weight:700;font-size:15px;line-height:1.45;min-width:0}
+.ch-t span{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+.ch-p{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ch-t .free{display:inline-block;vertical-align:2px;font-family:var(--body);font-size:11px;font-weight:700;color:var(--done);border:1px solid var(--done);border-radius:999px;padding:1px 8px;margin-left:6px}
+.frames{display:flex;gap:3px;padding:0 14px 12px}
+.frames i{flex:1;height:5px;border-radius:2px;background:var(--line)}
+.frames i.on{background:var(--done)}
+.list{list-style:none;margin:0;padding:0 8px 8px}
+.m{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 6px;border:0;border-top:1px solid var(--line);cursor:pointer;background:none;width:100%;text-align:left}
+.box{width:22px;height:22px;border:2px solid var(--line);border-radius:6px;display:grid;place-items:center;font-size:13px;color:#fff}
+.m.is-done .box{background:var(--done);border-color:var(--done)}
+.m.is-done .mt{color:var(--muted)}
+.m.is-locked .box{border-style:dashed}
+.m.is-locked .box::after{content:"";width:8px;height:7px;border:2px solid var(--muted);border-radius:2px;margin-top:3px}
+.m.is-locked .mt{color:var(--muted)}
+.mt{font-size:14px;line-height:1.5;min-width:0}
+.tag{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.tag.pop{color:var(--accent);font-weight:700}
+
+.scrim{position:fixed;inset:0;background:var(--shade);z-index:10}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;max-height:90%;overflow:auto;background:var(--surface);border-radius:18px 18px 0 0;padding:8px 18px calc(24px + env(safe-area-inset-bottom,0px));max-width:600px;margin:0 auto;box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 12px}
+.kicker{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700}
+.sheet h3{font-size:20px;line-height:1.5;margin:4px 0 10px}
+.why{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:14px}
+.why b{color:var(--accent)}
+.steps{margin:14px 0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:26px 1fr;gap:8px;font-size:14.5px}
+.steps li::before{content:counter(s);font-family:var(--mono);font-weight:700;font-size:12px;width:22px;height:22px;border-radius:50%;background:var(--focus);color:var(--focus-ink);display:grid;place-items:center;margin-top:3px}
+.samples{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.samples figure{margin:0;min-width:0}
+.samples img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:8px;display:block;background:var(--bg)}
+.samples figcaption{font-size:11px;color:var(--muted);text-align:center;margin-top:2px}
+.ph{aspect-ratio:4/5;border:2px dashed var(--line);border-radius:8px;display:grid;place-items:center;text-align:center;font-size:11px;color:var(--muted);padding:8px;font-family:var(--mono);word-break:break-all}
+.ok{border-left:3px solid var(--done);padding:4px 0 4px 10px;font-size:14px;margin:12px 0}
+.ok b{color:var(--done)}
+.tip{border-left:3px solid var(--focus);padding:4px 0 4px 10px;font-size:14px;margin:12px 0}
+label.ml{display:block;font-size:12px;color:var(--muted);margin:14px 0 4px}
+textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px}
+textarea{min-height:68px;resize:vertical}
+.sheet .row{margin-top:14px}
+
+.buy-list{margin:10px 0;padding-left:1.2em;font-size:14px}
+.price{font-family:var(--mono);font-size:28px;font-weight:700;margin:8px 0 2px}
+.small{font-size:12px;color:var(--muted)}
+.err{color:#c0392b;font-size:13px;min-height:1.2em;margin-top:6px}
+.divider{border:0;border-top:1px solid var(--line);margin:18px 0}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;z-index:20;white-space:nowrap}
+.foot{font-size:11px;color:var(--muted);text-align:center;display:flex;flex-direction:column;gap:4px}
+.foot button{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:11px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-hidden="true"></div>
+    <div class="brand"><h1 id="appName"></h1><p id="appSub"></p></div>
+  </header>
+
+  <section class="welcome" id="welcome" hidden>
+    <h2>ようこそ！使い方は3つだけ</h2>
+    <ol>
+      <li>ミッションを開いて、iPhoneで実際にやってみる</li>
+      <li>できたら「できた！」を押す</li>
+      <li>気づいたことをメモに残す</li>
+    </ol>
+    <p>Safariの共有ボタン →「ホーム画面に追加」で、アプリのように使えます。</p>
+    <button class="btn" id="welcomeOk" type="button">はじめる</button>
+  </section>
+
+  <section class="stats" aria-label="進み具合">
+    <div class="stat"><div class="n" id="sDone">0</div><div class="l">できた</div><div class="bar"><i id="sBar"></i></div></div>
+    <div class="stat"><div class="n" id="sLeft">0</div><div class="l">のこり</div></div>
+    <div class="stat"><div class="n" id="sDays">0</div><div class="l">練習した日</div></div>
+  </section>
+
+  <section class="vf" aria-label="次のミッション">
+    <i class="k k1"></i><i class="k k2"></i><i class="k k3"></i><i class="k k4"></i>
+    <span class="lock-label" id="tLabel">次のミッション</span>
+    <h2 id="tTitle"></h2>
+    <p id="tWhy"></p>
+    <div class="row">
+      <button class="btn" id="tOpen" type="button">やってみる</button>
+      <span class="meta" id="tMeta"></span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <h2>ミッション</h2>
+      <div class="filter" role="group" aria-label="表示">
+        <button class="chip" type="button" data-f="all" aria-pressed="true">全部</button>
+        <button class="chip" type="button" data-f="todo" aria-pressed="false">まだ</button>
+        <button class="chip" type="button" data-f="done" aria-pressed="false">できた</button>
+      </div>
+    </div>
+    <div class="chapters" id="chapters"></div>
+  </section>
+
+  <footer class="foot">
+    <span id="footStatus"></span>
+    <span><button type="button" id="openCode">購入コードを入力</button> ・ <button type="button" id="resetBtn">記録をリセット</button></span>
+  </footer>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+  <div class="grab"></div>
+  <div class="kicker" id="mKicker"></div>
+  <h3 id="mTitle"></h3>
+  <div class="why" id="mWhy"></div>
+  <ol class="steps" id="mSteps"></ol>
+  <div class="samples" id="mSamples" hidden></div>
+  <div class="ok" id="mOk"></div>
+  <div class="tip" id="mTip"></div>
+  <label class="ml" for="mMemo">気づいたことメモ</label>
+  <textarea id="mMemo" placeholder="例：2倍にしたらお皿がまんまるになった"></textarea>
+  <div class="row">
+    <button class="btn" id="mDone" type="button">できた！</button>
+    <button class="btn ghost" id="mClose" type="button">閉じる</button>
+  </div>
+</div>
+
+<div class="sheet" id="buy" role="dialog" aria-modal="true" aria-labelledby="bTitle" hidden>
+  <div class="grab"></div>
+  <div class="kicker">続きのミッション</div>
+  <h3 id="bTitle"></h3>
+  <p class="small" id="bLead"></p>
+  <ul class="buy-list" id="bList"></ul>
+  <div class="price" id="bPrice"></div>
+  <p class="small">買い切り・追加料金なし・アップデート無料</p>
+  <div class="row"><a class="btn wide" id="bBuy" target="_blank" rel="noopener">購入ページへ</a></div>
+  <hr class="divider">
+  <label class="ml" for="bCode">購入後に届いた購入コードを入力</label>
+  <input type="text" id="bCode" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="例：CAFE-XXXX-XXXX">
+  <div class="err" id="bErr" role="status"></div>
+  <div class="row">
+    <button class="btn" id="bApply" type="button">解除する</button>
+    <button class="btn ghost" id="bClose" type="button">閉じる</button>
+  </div>
+</div>
+
+<div class="sheet" id="confirm" role="dialog" aria-modal="true" aria-labelledby="cTitle" hidden>
+  <div class="grab"></div>
+  <h3 id="cTitle">記録をリセットしますか？</h3>
+  <p class="small">「できた」とメモがすべて消えます。購入した内容は消えません。</p>
+  <div class="row"><button class="btn" id="cYes" type="button">リセットする</button><button class="btn ghost" id="cNo" type="button">やめる</button></div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+window.DRILL = {
+  id: "cafe",
+  name: "おいしい写真ドリル",
+  short: "おいしい写真",
+  sub: "iPhoneで、カフェごはんがもっとおいしそうに撮れる",
+  accent: "#c8325a",
+  accentDark: "#ff7a9a",
+  freeChapters: 2,
+  buy: {
+    price: "2,980円",
+    url: "",
+    lead: "料理の角度・光・色レシピ・インスタ投稿まで。カフェごはんを“おいしそう”に撮るためのミッションが全部開きます。",
+    codeHashes: ["9f4fc706d9715fd1a747b6bfe7f985ae55429428d4ca79f6eaa57854f2af63a1"]
+  },
+  chapters: [
+  {t:"最初にやる設定", s:"10分で写真が変わる", m:[
+    {id:"grid",t:"グリッドと水平をONにする",min:2,pop:true,why:"画面に線が出るだけで、傾きが消えてお皿がまっすぐ撮れます。",steps:["設定 → カメラ → 構図 を開く","「グリッド」と「水平」をON","カメラを開いて、9マスの線が出るか確認","真上から撮るとき、十字が重なって黄色になる位置を探す"],ok:"カメラに線が出て、まっすぐにすると黄色く変わる",tip:"ラテアートや丼を真上から撮るとき、十字が重なる位置がベストです。"},
+    {id:"keep",t:"好きな明るさを覚えさせる",min:3,why:"毎回明るさを直さなくて済みます。明るめが好きな人は必須。",steps:["設定 → カメラ → 設定を保持","「露出調整」と「フォトグラフスタイル」をON","カメラで明るさを少し上げる","アプリを閉じて開き直し、明るさが残っているか確認"],ok:"開き直しても明るさの数字が残っている",tip:"カフェ写真は +0.3〜+0.7 くらいの明るめがおすすめ。"},
+    {id:"lens",t:"レンズをひと拭きして撮り比べ",min:2,pop:true,why:"一番かんたんで、一番効果があります。白いモヤが消えてくっきり。",steps:["明るい窓に向けて1枚","服やメガネ拭きでレンズを拭く","同じ場所でもう1枚","2枚を並べて比べる"],ok:"拭いた後の方がくっきりしている",tip:"スマホは指が触れやすいので、撮る前にひと拭きを習慣に。"},
+    {id:"quicktake",t:"写真モードのまま動画を撮る",min:2,why:"注ぐ瞬間や湯気を、モードを切り替えずに動画で残せます。",steps:["シャッターを長押し → 動画が始まる","指を右の鍵マークへずらす → 指を離しても撮影が続く","赤いボタンで止める"],ok:"写真モードのまま動画が1本撮れた",tip:"ラテを注ぐ、チーズを伸ばすときに便利。"},
+    {id:"burst",t:"シャッターを左にずらして連写",min:2,why:"動く瞬間のベストを、あとから選べます。",steps:["シャッターを左にずらしたまま押さえる","数字が増えたら離す","写真アプリで連写写真を開き「選択」","いい1枚だけ残す"],ok:"連写から1枚を選んで保存できた",tip:"設定 → カメラ →「音量を上げるボタンでバースト」をONにすると、横のボタンでも連写できます。"}
+  ]},
+  {t:"ピントと明るさ", s:"おいしそうの土台", m:[
+    {id:"aeaf",t:"長押しでピントと明るさを固定",min:3,pop:true,why:"少し構図を動かしても、明るさが変わらなくなります。料理撮影の必須ワザ。",steps:["カップなどを置く","画面のカップを長押し → 黄色い「AE/AFロック」が出る","スマホを少し動かしても明るさが変わらないか確認","画面をもう一度タップで解除"],ok:"黄色い「AE/AFロック」が出せた",tip:"ロックしたあと☀️を上下すると、明るさも固定したまま調整できます。"},
+    {id:"exposure",t:"明るさを変えて3枚くらべる",min:4,why:"明るめ＝ふんわりカフェ風、暗め＝大人っぽい。印象の違いを体で覚えます。",steps:["料理をタップ","☀️を下げて1枚","そのままで1枚","☀️を上げて1枚","3枚並べて、どれが一番おいしそうか選ぶ"],ok:"3枚の違いを自分の言葉で言える",tip:"白いお皿が真っ白に飛ばない、ギリギリの明るさが一番おいしそう。"},
+    {id:"whiteclip",t:"真っ白に飛ぶと戻らない、を体験",min:4,why:"迷ったときに「少し暗めに撮る」が正解な理由がわかります。",steps:["窓が入る場所で、明るめに1枚","暗めに1枚","両方を編集で直してみる","どちらがきれいに戻せたか比べる"],ok:"暗めに撮った方がきれいに直せた",tip:"暗いところはあとで明るくできるけど、真っ白はもう戻りません。"},
+    {id:"night",t:"暗いお店でもきれいに撮る",min:5,why:"夜カフェやバーで、ブレたりザラザラになるのを防ぎます。",steps:["暗い場所でカメラを開く → 黄色い月マーク","スマホをテーブルに置くか、両ひじをつく","月マークの秒数が終わるまで動かさない","フラッシュはOFFのまま"],ok:"暗い場所でもブレずに撮れた",tip:"フラッシュは料理がテカって平べったくなるので使わないのが基本。"}
+  ]},
+  {t:"2倍で撮る", s:"レンズの使い分け", m:[
+    {id:"zoom4",t:"同じお皿を 0.5x / 1x / 2x で撮りくらべ",min:6,pop:true,why:"2倍で少し離れて撮るだけで、お皿がまんまるに。一番かんたんにプロっぽくなります。",steps:["お皿を1つ置く","0.5xで近づいて1枚","1xで1枚","2xにして少し下がり、同じ大きさになるように1枚","並べてお皿の形をくらべる"],ok:"2倍だとお皿が楕円にならないとわかった",tip:"料理は「2倍で、ちょっと離れる」。これだけ覚えて帰っても元が取れます。"},
+    {id:"dial",t:"ズームダイヤルで細かく決める",min:2,why:"ちょうどいい大きさにぴったり合わせられます。",steps:["画面下の「1x」を長押し","出てきたダイヤルを指でなぞる","好きな倍率で止めて撮る"],ok:"ダイヤルで中間の倍率にできた",tip:"席から動けないお店では、ダイヤルで調整すると便利。"},
+    {id:"macro",t:"マクロで質感に寄る",min:5,why:"パンの気泡、クリーム、ソースのツヤ。寄るだけでおいしさが伝わります。",steps:["料理に2〜3cmまで近づく","花マークが出たらマクロ（対応機種）","パンの断面・泡・フルーツなどを3枚","いちばん“食べたくなる”1枚を選ぶ"],ok:"質感が伝わる寄りの写真が撮れた",tip:"マクロ非対応の機種は、2xで撮ってトリミングでもOK。"},
+    {id:"portrait",t:"ポートレートでドリンクの背景をぼかす",min:5,why:"背景がごちゃごちゃしたお店でも、主役だけが目立ちます。",steps:["ポートレートモードでドリンクを撮る","編集 → 左上「f」でボケの量を変える","f2.8〜f4くらいにしてみる","f1.4（ボケすぎ）とくらべる"],ok:"自然なボケの写真ができた",tip:"ボケすぎると嘘っぽくなるので、ほどほどが一番。"}
+  ]},
+  {t:"料理のアングルと構図", s:"真上・45°・真横", m:[
+    {id:"angle3",t:"3つのアングルで同じ料理を撮る",min:8,pop:true,why:"料理によって正解のアングルが違います。迷わなくなります。",steps:["真上：十字が重なる位置で（ピザ・丼・ボウル）","斜め45°：座った目線で（ほとんどの料理）","真横：テーブルすれすれ（ハンバーガー・パフェ・ドリンク）","3枚並べて、この料理に合うのはどれか決める"],ok:"料理に合うアングルを選べた",tip:"迷ったら斜め45°。食べる人の目線です。"},
+    {id:"hamidashi",t:"はみ出し構図で寄る",min:4,why:"お皿を全部入れなくていい。寄ると一気においしそうに。",steps:["お皿全体を入れて1枚","お皿のフチを少し切るくらいまで寄って1枚","くらべて、どちらが食べたくなるか見る"],ok:"はみ出し構図の1枚が撮れた",tip:"インスタで一番多いのがこの構図です。"},
+    {id:"yohaku",t:"余白を残して“文字入れ用”に撮る",min:4,why:"ストーリーズで文字を入れたいとき、あとで困りません。",steps:["料理を画面の下か端に置く","上に空間を大きく残して撮る","ストーリーズで文字を入れてみる"],ok:"文字が入れやすい写真になった",tip:"テーブルや壁など、無地の部分を余白にするとすっきり。"},
+    {id:"diag",t:"フォークは斜め、お菓子は3つ",min:5,why:"斜めの線と奇数で、動きとリズムが出ます。",steps:["フォークやお箸を斜めに置いて撮る","クッキーやマカロンを2個 → 3個に変えて撮る","どちらが自然か見くらべる"],ok:"斜めと奇数の効果がわかった",tip:"お菓子は3つか5つ。偶数より自然に見えます。"},
+    {id:"flatlay",t:"テーブル全体を真上から並べて撮る",min:6,why:"ブランチやカフェ巡りの「全部見せ」写真に。",steps:["料理・ドリンク・カトラリーをテーブルに並べる","少しずつ隙間をあけて、重ならないように","真上から、十字が重なる位置で撮る","1つずつ位置を動かして整える"],ok:"すっきり並んだ真上写真が撮れた",tip:"立って撮れないときは、椅子の上から（お店の許可をとって）。"}
+  ]},
+  {t:"光とスタイリング", s:"窓際の席がすべて", m:[
+    {id:"window",t:"窓に対して料理を回して光をくらべる",min:10,pop:true,why:"斜め後ろからの光（半逆光）で、ツヤと立体感が出ます。",steps:["窓際に料理を置く","窓が自分の後ろ（順光）で1枚","窓が横で1枚","窓が料理の斜め奥（半逆光）で1枚","ツヤと立体感をくらべる"],ok:"半逆光が一番おいしそうとわかった",tip:"お店に入ったら窓際の席。これがカフェ撮影の8割です。"},
+    {id:"reflector",t:"白いナプキンでレフ板",min:4,why:"逆光で暗くなった手前を、道具なしで明るくできます。",steps:["逆光で料理を撮る","手前が暗いのを確認","白いナプキンやメニューの白い面を手前に立てる","もう1枚撮ってくらべる"],ok:"手前の影が明るくなった",tip:"白い紙1枚がレフ板になります。"},
+    {id:"shadow",t:"自分とスマホの影を消す",min:3,why:"料理に影が落ちると暗くて残念な写真に。",steps:["真上から撮ったとき影が落ちていないか確認","影があれば体をずらす・少し斜めから撮る","2xで少し離れて撮るのも効果あり"],ok:"影のない写真が撮れた",tip:"天井の照明の真下は影ができやすい場所です。"},
+    {id:"styling",t:"お皿のフチを拭いて、ちょい散らし",min:5,why:"プロが一番やっていること。ビフォーアフターで違いがわかります。",steps:["そのままで1枚","お皿のフチの汚れを拭く","ハーブ・パンくず・粉糖を少しだけ散らす","布やカトラリーを足してもう1枚"],ok:"スタイリング前後で違いが出た",tip:"“ちょっとこぼれてる”くらいが自然でおいしそう。"},
+    {id:"colorpair",t:"反対の色を1つ足す",min:4,why:"赤×緑、オレンジ×青。反対の色が入ると料理が鮮やかに見えます。",steps:["茶色い料理をそのまま撮る","パセリ・ネギ・ハーブなど緑を1つ足す（または緑の小物を置く）","くらべる"],ok:"色を足した方がおいしそうに見えた",tip:"茶色い料理は緑を1つ。これだけで映えます。"}
+  ]},
+  {t:"動きと湯気", s:"Live Photosで“シズル感”", m:[
+    {id:"sizzle",t:"持ち上げる・注ぐ瞬間を撮る",min:6,pop:true,why:"手が入ると「今から食べる」感じが伝わります。",steps:["Live PhotosをON（丸いマーク）","フォークで持ち上げる、ソースを注ぐ、カップを両手で持つ","写真を開いて編集 → Live Photosマーク → 一番いいコマを「キー写真に設定」"],ok:"動きのある1枚が撮れた",tip:"目をつぶった・ブレたときも、3秒の中から選び直せます。"},
+    {id:"steam",t:"湯気を写す",min:6,why:"出来立て感が一番伝わるのが湯気。条件がわかれば撮れます。",steps:["温かい飲み物を用意","背景を暗い場所にする","光が奥から来る位置に置く","明るさを少し下げて撮る"],ok:"湯気が見える写真が撮れた",tip:"湯気は暗い背景と逆光で写ります。出来立て30秒が勝負。"},
+    {id:"loop",t:"湯気をループ動画にする",min:3,why:"インスタで動く写真に。ストーリーズで目を引きます。",steps:["湯気をLive Photosで撮る","写真を開いて左上「LIVE」→「ループ」","バウンスもためしてみる"],ok:"湯気が動き続ける写真ができた",tip:"乾杯はバウンスにすると楽しい動きに。"},
+    {id:"slowmo",t:"スローモーションでとろ〜り",min:5,why:"卵黄、はちみつ、シロップがとろっと流れる瞬間をドラマチックに。",steps:["カメラを「スロー」に切り替える","はちみつを垂らす・卵黄を割る","写真アプリでスローになる部分を調整"],ok:"とろ〜りのスロー動画が撮れた",tip:"明るい場所の方がきれいに撮れます。"}
+  ]},
+  {t:"色レシピと編集", s:"同じ写真が別物に", m:[
+    {id:"recipe1",t:"色レシピ① ふんわりカフェ風",min:6,pop:true,why:"明るく透明感のある、カフェらしい色になります。",steps:["料理写真を開いて「編集」","露出 +20 / ブリリアンス +30 / ハイライト −30 / シャドウ +25","コントラスト −15 / ブラックポイント −5 / 彩度 +5","暖かみ +10 / シャープネス +10","写真をタップして元とくらべる"],ok:"ふんわり明るいカフェ風になった",tip:"パンケーキ・ラテ・スイーツにぴったり。"},
+    {id:"recipe2",t:"色レシピ② こってり濃厚",min:6,why:"ラーメン・焼肉・揚げ物を、しっかりおいしそうに。",steps:["茶色い料理の写真を編集","露出 +5 / ブリリアンス +20 / コントラスト +20 / ブラックポイント +10","彩度 +15 / 自然な彩度 +20 / 暖かみ +20","シャープネス +25 / ビネット +15"],ok:"こってりした色になった",tip:"料理によってレシピを使い分けるのがコツ。"},
+    {id:"recipe3",t:"色レシピ③ 韓国カフェ風（くすみ）",min:6,why:"ミルクティーのような、やわらかいくすみカラー。",steps:["焼き菓子やドリンクの写真を編集","露出 +15 / ハイライト −25 / コントラスト −30 / ブラックポイント −15","彩度 −15 / 暖かみ +20 / 色合い +5"],ok:"くすみカラーになった",tip:"白い器・木のテーブルと相性ばつぐん。"},
+    {id:"warmth",t:"青っぽい写真を「暖かみ」で直す",min:3,why:"青みは食欲が落ちる色。蛍光灯の下の写真がおいしそうに戻ります。",steps:["蛍光灯の下で撮った写真を編集","暖かみを +15〜+25","青白さが消えたか確認"],ok:"青白さがなくなった",tip:"ドリンクやかき氷は、逆に少し青めが爽やか。"},
+    {id:"copypaste",t:"編集をコピーして一気に貼る",min:4,pop:true,why:"1枚直せば、残りは貼るだけ。インスタの統一感が一気に出ます。",steps:["編集した写真で右上「…」→「編集内容をコピー」","アルバムで「選択」して数枚選ぶ","「…」→「編集内容をペースト」"],ok:"複数の写真に同じ色が一度に入った",tip:"自分のお気に入りレシピを1つ決めておくと迷いません。"},
+    {id:"cleanup",t:"写り込んだおしぼりを消す",min:4,why:"伝票、おしぼり、隣の人の手。なぞるだけで消せます。",steps:["写り込みのある写真を編集","「クリーンアップ」を選ぶ","消したい物をなぞる"],ok:"写り込みを消せた（非対応の機種はスキップでOK）",tip:"そもそも撮る前にテーブルを片付けるのが一番きれい。"}
+  ]},
+  {t:"インスタ投稿の仕上げ", s:"見てもらえる投稿に", m:[
+    {id:"ratio",t:"4:5の縦長で投稿する",min:4,why:"インスタのフィードで一番大きく表示されるサイズです。",steps:["写真を編集 → トリミング","比率から「4:5」を選ぶ","料理が真ん中あたりに来るように調整"],ok:"4:5に整えた写真ができた",tip:"4:3で撮っておくと、上下を少し切るだけで4:5になります。"},
+    {id:"carousel",t:"5枚で“カフェに行った日”を作る",min:10,why:"引き → 寄り → 手 → 断面 → 余韻。並べるだけでストーリーになります。",steps:["お店の外観か席全体（引き）","料理の寄り","手が入った1枚","断面や中身","食べ終わり・窓の外など余韻の1枚"],ok:"5枚のセットができた",tip:"1枚目は一番目を引く写真に。"},
+    {id:"style",t:"自分の色を決めて固定する",min:6,why:"撮るたびに自分の雰囲気になり、アカウントに統一感が出ます。",steps:["カメラのフォトグラフスタイルを開く","暖かめ・明るめなどいくつか試す","気に入ったものに決める","設定を保持でフォトグラフスタイルをON"],ok:"自分のスタイルを1つ決めた",tip:"フィルターと違い、肌の色を守ったまま雰囲気を変えられます。"},
+    {id:"privacy",t:"投稿前の3つのチェック",min:3,why:"位置情報・写り込み・お店のルール。安心して投稿するために。",steps:["共有 → オプション → 位置情報をOFF","知らない人の顔や名札が写っていないか確認","撮影NGのお店でないか確認"],ok:"3つを確認してから投稿できた",tip:"自宅の料理は特に位置情報に注意。"}
+  ]}
+  ]
+};
+
+</script>
+<script>
+window.DRILL_PREVIEW = true;
+(function(){
+"use strict";
+const D = window.DRILL;
+const $ = id => document.getElementById(id);
+const KEY = "drill-" + D.id;
+const KEY_UNLOCK = KEY + "-unlocked";
+const KEY_WELCOME = KEY + "-welcomed";
+const today = () => new Date().toLocaleDateString("sv-SE");
+
+const ALL = [];
+D.chapters.forEach((c, ci) => c.m.forEach(m => ALL.push(Object.assign({}, m, {ch: c, ci}))));
+
+function load(k, fallback){ try{ const v = localStorage.getItem(k); return v == null ? fallback : JSON.parse(v); }catch(e){ return fallback; } }
+function store(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+let state = Object.assign({done:{}, memo:{}, days:[]}, load(KEY, {}));
+let unlocked = !!load(KEY_UNLOCK, false);
+let filter = "all", openId = null, memoTimer = null;
+
+const isFree = ci => ci < D.freeChapters;
+const canOpen = m => unlocked || isFree(m.ci);
+const save = () => store(KEY, state);
+
+/* ---------- home ---------- */
+function render(){
+  const n = ALL.filter(m => state.done[m.id]).length;
+  $("sDone").textContent = n;
+  $("sLeft").textContent = ALL.length - n;
+  $("sDays").textContent = state.days.length;
+  $("sBar").style.width = Math.round(n / ALL.length * 100) + "%";
+
+  const next = ALL.find(m => !state.done[m.id]);
+  const tOpen = $("tOpen");
+  if(!next){
+    $("tLabel").textContent = "修了";
+    $("tTitle").textContent = "全ミッション達成！おめでとうございます";
+    $("tWhy").textContent = "メモを見返すと、自分だけのコツ集になっています。好きなミッションをもう一度やってみましょう。";
+    $("tMeta").textContent = ""; tOpen.hidden = true;
+  } else if(!canOpen(next)){
+    $("tLabel").textContent = "無料体験クリア";
+    $("tTitle").textContent = "無料のミッションを全部できました！";
+    $("tWhy").textContent = `ここから先は「${D.chapters[D.freeChapters].t}」など${ALL.filter(m => !isFree(m.ci)).length}個のミッション。続きは購入で開きます。`;
+    $("tMeta").textContent = ""; tOpen.hidden = false; tOpen.textContent = "続きを見る"; tOpen.onclick = openBuy;
+  } else {
+    $("tLabel").textContent = "次のミッション";
+    $("tTitle").textContent = next.t;
+    $("tWhy").textContent = next.why;
+    $("tMeta").textContent = `CH ${pad(next.ci + 1)} ・ 約${next.min}分${next.pop ? " ・ 人気" : ""}`;
+    tOpen.hidden = false; tOpen.textContent = "やってみる"; tOpen.onclick = () => openMission(next.id);
+  }
+
+  const box = $("chapters"); box.textContent = "";
+  D.chapters.forEach((c, ci) => {
+    const items = ALL.filter(m => m.ci === ci && (filter === "all" || (filter === "done") === !!state.done[m.id]));
+    if(!items.length) return;
+    const total = c.m.length, d = c.m.filter(m => state.done[m.id]).length;
+    const el = document.createElement("article"); el.className = "ch";
+    const h = document.createElement("div"); h.className = "ch-h";
+    const no = document.createElement("span"); no.className = "ch-no"; no.textContent = "CH " + pad(ci + 1);
+    const t = document.createElement("div"); t.className = "ch-t"; t.textContent = c.t;
+    if(isFree(ci) && !unlocked){ const f = document.createElement("span"); f.className = "free"; f.textContent = "無料"; t.appendChild(f); }
+    const s = document.createElement("span"); s.textContent = c.s; t.appendChild(s);
+    const p = document.createElement("span"); p.className = "ch-p"; p.textContent = `${d}/${total}`;
+    h.append(no, t, p);
+    const fr = document.createElement("div"); fr.className = "frames";
+    c.m.forEach(m => { const i = document.createElement("i"); if(state.done[m.id]) i.className = "on"; fr.appendChild(i); });
+    const ul = document.createElement("ul"); ul.className = "list";
+    items.forEach(m => {
+      const li = document.createElement("li");
+      const b = document.createElement("button"); b.type = "button";
+      const locked = !canOpen(m), done = !!state.done[m.id];
+      b.className = "m" + (done ? " is-done" : "") + (locked ? " is-locked" : "");
+      const bx = document.createElement("span"); bx.className = "box"; bx.setAttribute("aria-hidden", "true"); bx.textContent = done ? "✓" : "";
+      const mt = document.createElement("span"); mt.className = "mt"; mt.textContent = m.t;
+      const tg = document.createElement("span"); tg.className = "tag" + (m.pop ? " pop" : ""); tg.textContent = (m.pop ? "人気 " : "") + m.min + "分";
+      b.append(bx, mt, tg);
+      b.setAttribute("aria-label", m.t + (done ? "（できた）" : locked ? "（購入で開きます）" : ""));
+      b.onclick = () => locked ? openBuy() : openMission(m.id);
+      li.appendChild(b); ul.appendChild(li);
+    });
+    el.append(h, fr, ul); box.appendChild(el);
+  });
+
+  $("footStatus").textContent = unlocked ? "全ミッション解放済み" : `無料体験中（${D.freeChapters}章まで）`;
+  $("openCode").hidden = unlocked;
+}
+const pad = n => String(n).padStart(2, "0");
+
+/* ---------- sheets ---------- */
+let openSheet = null;
+function show(id){ hideAll(); $("scrim").hidden = false; $(id).hidden = false; $(id).scrollTop = 0; openSheet = id; }
+function hideAll(){ ["sheet","buy","confirm"].forEach(i => $(i).hidden = true); $("scrim").hidden = true; openSheet = null; }
+function closeAny(){ if(openSheet === "sheet") flushMemo(); openId = null; hideAll(); }
+
+function addLabeled(el, label, text){ el.textContent = ""; const b = document.createElement("b"); b.textContent = label; el.append(b, text); }
+
+function openMission(id){
+  const m = ALL.find(x => x.id === id); if(!m) return;
+  openId = id;
+  $("mKicker").textContent = `CH ${pad(m.ci + 1)} ${m.ch.t} ・ 約${m.min}分`;
+  $("mTitle").textContent = m.t;
+  addLabeled($("mWhy"), "なぜ？ ", m.why);
+  const ol = $("mSteps"); ol.textContent = "";
+  m.steps.forEach(s => { const li = document.createElement("li"); const sp = document.createElement("span"); sp.textContent = s; li.appendChild(sp); ol.appendChild(li); });
+  samples(m);
+  addLabeled($("mOk"), "できた目安：", m.ok);
+  addLabeled($("mTip"), "コツ：", m.tip);
+  $("mMemo").value = state.memo[m.id] || "";
+  const d = !!state.done[m.id];
+  $("mDone").textContent = d ? "できた を取り消す" : "できた！";
+  $("mDone").className = d ? "btn ghost" : "btn";
+  show("sheet");
+  $("mClose").focus();
+}
+
+/* sample photos: photos/<id>-before.jpg / -after.jpg — shown only if the file exists */
+function samples(m){
+  const box = $("mSamples"); box.textContent = ""; box.hidden = true;
+  [["before","ビフォー"],["after","アフター"]].forEach(([k, cap]) => {
+    const file = `photos/${m.id}-${k}.jpg`;
+    const fig = document.createElement("figure");
+    const img = new Image(); img.alt = `${m.t}の${cap}`; img.loading = "lazy";
+    const fc = document.createElement("figcaption"); fc.textContent = cap;
+    img.onload = () => { box.hidden = false; };
+    img.onerror = () => {
+      if(window.DRILL_PREVIEW){ const ph = document.createElement("div"); ph.className = "ph"; ph.textContent = "見本写真をここに\n" + file; img.replaceWith(ph); box.hidden = false; }
+      else fig.remove();
+    };
+    img.src = file;
+    fig.append(img, fc); box.appendChild(fig);
+  });
+}
+
+$("mDone").onclick = () => {
+  const m = ALL.find(x => x.id === openId); if(!m) return;
+  flushMemo();
+  if(state.done[m.id]) delete state.done[m.id];
+  else {
+    state.done[m.id] = today();
+    if(!state.days.includes(today())) state.days.push(today());
+    toast(ALL.every(x => state.done[x.id]) ? "全部できた！修了です" : "ナイス！ひとつ覚えた");
+  }
+  save(); render();
+  if(state.done[m.id]) setTimeout(closeAny, 450);
+  else openMission(m.id);
+};
+$("mMemo").addEventListener("input", () => {
+  if(!openId) return;
+  state.memo[openId] = $("mMemo").value;
+  clearTimeout(memoTimer); memoTimer = setTimeout(() => { memoTimer = null; save(); }, 600);
+});
+function flushMemo(){ if(memoTimer){ clearTimeout(memoTimer); memoTimer = null; save(); } }
+
+/* ---------- purchase ---------- */
+function openBuy(){
+  $("bTitle").textContent = `${D.name} 完全版`;
+  $("bLead").textContent = D.buy.lead;
+  const ul = $("bList"); ul.textContent = "";
+  D.chapters.forEach((c, ci) => { if(isFree(ci)) return; const li = document.createElement("li"); li.textContent = `${c.t}（${c.m.length}ミッション）`; ul.appendChild(li); });
+  $("bPrice").textContent = D.buy.price;
+  const a = $("bBuy");
+  if(D.buy.url){ a.href = D.buy.url; a.removeAttribute("aria-disabled"); a.textContent = "購入ページへ"; }
+  else { a.removeAttribute("href"); a.setAttribute("aria-disabled", "true"); a.textContent = "購入ページは準備中です"; }
+  $("bCode").value = ""; $("bErr").textContent = "";
+  show("buy");
+}
+async function sha256(text){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+$("bApply").onclick = async () => {
+  const code = $("bCode").value.trim().toUpperCase().replace(/\s+/g, "");
+  if(!code){ $("bErr").textContent = "購入コードを入力してください。"; return; }
+  if(!window.crypto || !crypto.subtle){ $("bErr").textContent = "このブラウザでは確認できません。Safariで開き直してください。"; return; }
+  const h = await sha256(D.id + ":" + code);
+  if((D.buy.codeHashes || []).includes(h)){
+    unlocked = true; store(KEY_UNLOCK, true); hideAll(); render(); toast("全ミッションが開きました！");
+  } else {
+    $("bErr").textContent = "コードが違います。購入完了メールのコードを、ハイフンも含めてそのまま入力してください。";
+  }
+};
+$("bClose").onclick = closeAny;
+$("openCode").onclick = openBuy;
+
+/* ---------- misc ---------- */
+$("mClose").onclick = closeAny;
+$("scrim").onclick = closeAny;
+document.addEventListener("keydown", e => { if(e.key === "Escape" && openSheet) closeAny(); });
+document.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+  filter = b.dataset.f;
+  document.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  render();
+});
+$("resetBtn").onclick = () => show("confirm");
+$("cNo").onclick = closeAny;
+$("cYes").onclick = () => { state = {done:{}, memo:{}, days:[]}; save(); closeAny(); render(); toast("リセットしました"); };
+function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 1800); }
+
+$("appName").textContent = D.name;
+$("appSub").textContent = D.sub;
+if(!load(KEY_WELCOME, false)){ $("welcome").hidden = false; }
+$("welcomeOk").onclick = () => { store(KEY_WELCOME, true); $("welcome").hidden = true; };
+render();
+
+if("serviceWorker" in navigator && location.protocol === "https:" && !window.DRILL_PREVIEW){
+  try{ navigator.serviceWorker.register("sw.js").catch(() => {}); }catch(e){}
+}
+})();
+
+</script>

@@ -1,0 +1,120 @@
+<title>{{TITLE}}</title>
+<meta name="description" content="{{SUB}}">
+<meta name="theme-color" content="{{ACCENT}}">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="{{SHORT}}">
+{{PWA_LINKS}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{--v-accent:{{ACCENT}};--v-accent-dark:{{ACCENT_DARK}}}
+{{STYLE}}
+</style>
+<!--BODY-->
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-hidden="true"></div>
+    <div class="brand"><h1 id="appName"></h1><p id="appSub"></p></div>
+  </header>
+
+  <section class="welcome" id="welcome" hidden>
+    <h2>ようこそ！使い方は3つだけ</h2>
+    <ol>
+      <li>ミッションを開いて、iPhoneで実際にやってみる</li>
+      <li>できたら「できた！」を押す</li>
+      <li>気づいたことをメモに残す</li>
+    </ol>
+    <p>Safariの共有ボタン →「ホーム画面に追加」で、アプリのように使えます。</p>
+    <button class="btn" id="welcomeOk" type="button">はじめる</button>
+  </section>
+
+  <section class="stats" aria-label="進み具合">
+    <div class="stat"><div class="n" id="sDone">0</div><div class="l">できた</div><div class="bar"><i id="sBar"></i></div></div>
+    <div class="stat"><div class="n" id="sLeft">0</div><div class="l">のこり</div></div>
+    <div class="stat"><div class="n" id="sDays">0</div><div class="l">練習した日</div></div>
+  </section>
+
+  <section class="vf" aria-label="次のミッション">
+    <i class="k k1"></i><i class="k k2"></i><i class="k k3"></i><i class="k k4"></i>
+    <span class="lock-label" id="tLabel">次のミッション</span>
+    <h2 id="tTitle"></h2>
+    <p id="tWhy"></p>
+    <div class="row">
+      <button class="btn" id="tOpen" type="button">やってみる</button>
+      <span class="meta" id="tMeta"></span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <h2>ミッション</h2>
+      <div class="filter" role="group" aria-label="表示">
+        <button class="chip" type="button" data-f="all" aria-pressed="true">全部</button>
+        <button class="chip" type="button" data-f="todo" aria-pressed="false">まだ</button>
+        <button class="chip" type="button" data-f="done" aria-pressed="false">できた</button>
+      </div>
+    </div>
+    <div class="chapters" id="chapters"></div>
+  </section>
+
+  <footer class="foot">
+    <span id="footStatus"></span>
+    <span><button type="button" id="openCode">購入コードを入力</button> ・ <button type="button" id="resetBtn">記録をリセット</button></span>
+  </footer>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+  <div class="grab"></div>
+  <div class="kicker" id="mKicker"></div>
+  <h3 id="mTitle"></h3>
+  <div class="why" id="mWhy"></div>
+  <ol class="steps" id="mSteps"></ol>
+  <div class="samples" id="mSamples" hidden></div>
+  <div class="ok" id="mOk"></div>
+  <div class="tip" id="mTip"></div>
+  <label class="ml" for="mMemo">気づいたことメモ</label>
+  <textarea id="mMemo" placeholder="例：2倍にしたらお皿がまんまるになった"></textarea>
+  <div class="row">
+    <button class="btn" id="mDone" type="button">できた！</button>
+    <button class="btn ghost" id="mClose" type="button">閉じる</button>
+  </div>
+</div>
+
+<div class="sheet" id="buy" role="dialog" aria-modal="true" aria-labelledby="bTitle" hidden>
+  <div class="grab"></div>
+  <div class="kicker">続きのミッション</div>
+  <h3 id="bTitle"></h3>
+  <p class="small" id="bLead"></p>
+  <ul class="buy-list" id="bList"></ul>
+  <div class="price" id="bPrice"></div>
+  <p class="small">買い切り・追加料金なし・アップデート無料</p>
+  <div class="row"><a class="btn wide" id="bBuy" target="_blank" rel="noopener">購入ページへ</a></div>
+  <hr class="divider">
+  <label class="ml" for="bCode">購入後に届いた購入コードを入力</label>
+  <input type="text" id="bCode" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="例：CAFE-XXXX-XXXX">
+  <div class="err" id="bErr" role="status"></div>
+  <div class="row">
+    <button class="btn" id="bApply" type="button">解除する</button>
+    <button class="btn ghost" id="bClose" type="button">閉じる</button>
+  </div>
+</div>
+
+<div class="sheet" id="confirm" role="dialog" aria-modal="true" aria-labelledby="cTitle" hidden>
+  <div class="grab"></div>
+  <h3 id="cTitle">記録をリセットしますか？</h3>
+  <p class="small">「できた」とメモがすべて消えます。購入した内容は消えません。</p>
+  <div class="row"><button class="btn" id="cYes" type="button">リセットする</button><button class="btn ghost" id="cNo" type="button">やめる</button></div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+{{CONTENT}}
+</script>
+<script>
+window.DRILL_PREVIEW = {{PREVIEW}};
+{{ENGINE}}
+</script>

@@ -1,0 +1,23 @@
+{
+  "name": "おいしい写真ドリル",
+  "short_name": "おいしい写真",
+  "description": "iPhoneで、カフェごはんがもっとおいしそうに撮れる",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f4f2",
+  "theme_color": "#c8325a",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
