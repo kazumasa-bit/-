@@ -6,7 +6,7 @@
   - dist/preview/<版>.html も作る（見本写真の場所が見える確認用・1ファイル）
   - 購入コードは codes.json（Git管理外）から読む。なければ自動で作る
 """
-import hashlib, json, re, secrets, shutil, string
+import base64, hashlib, json, re, secrets, shutil, string
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -95,10 +95,11 @@ def main():
         icon_png(accent, out / "icon-180.png", 180)
         icon_png(accent, out / "icon-512.png", 512)
 
-        photos = []
-        if (PHOTOS / vid).exists():
-            shutil.copytree(PHOTOS / vid, out / "photos")
-            photos = sorted("photos/" + p.name for p in (out / "photos").glob("*.jpg"))
+        (out / "photos").mkdir()
+        for sub in ("common", vid):
+            if (PHOTOS / sub).exists():
+                shutil.copytree(PHOTOS / sub, out / "photos" / sub if sub == "common" else out / "photos", dirs_exist_ok=True)
+        photos = sorted(p.relative_to(out).as_posix() for p in (out / "photos").rglob("*.jpg"))
 
         (out / "manifest.webmanifest").write_text(json.dumps({
             "name": name, "short_name": short, "description": sub, "lang": "ja",
@@ -118,8 +119,12 @@ def main():
             encoding="utf-8")
 
         # 確認用（1ファイル・見本写真の置き場所を表示）
-        (DIST / "preview" / f"{vid}.html").write_text(fill(head_t, True, "") + fill(body_t, True, ""), encoding="utf-8")
-        print(f"{name}: dist/{vid}/  ミッション {js.count('{id:')} 個 / 見本写真 {len(photos)} 枚 / 購入コード {', '.join(codes[vid])}")
+        preview = fill(head_t, True, "") + fill(body_t, True, "")
+        for img in sorted((PHOTOS / "common").glob("*.jpg")):
+            uri = "data:image/jpeg;base64," + base64.b64encode(img.read_bytes()).decode()
+            preview = preview.replace(f'"photos/common/{img.name}"', f'"{uri}"')
+        (DIST / "preview" / f"{vid}.html").write_text(preview, encoding="utf-8")
+        print(f"{name}: dist/{vid}/  ミッション {js.count('{id:')} 個 / 写真 {len(photos)} 枚 / 購入コード {', '.join(codes[vid])}")
 
     CODES.write_text(json.dumps(codes, ensure_ascii=False, indent=2), encoding="utf-8")
 

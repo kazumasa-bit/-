@@ -1,7 +1,7 @@
 {
   "name": "おいしい写真ドリル",
   "short_name": "おいしい写真",
-  "description": "iPhoneで、カフェごはんがもっとおいしそうに撮れる",
+  "description": "cafe",
   "lang": "ja",
   "start_url": "./",
   "scope": "./",

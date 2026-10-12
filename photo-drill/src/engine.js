@@ -101,7 +101,21 @@ function openMission(id){
   $("mTitle").textContent = m.t;
   addLabeled($("mWhy"), "なぜ？ ", m.why);
   const ol = $("mSteps"); ol.textContent = "";
-  m.steps.forEach(s => { const li = document.createElement("li"); const sp = document.createElement("span"); sp.textContent = s; li.appendChild(sp); ol.appendChild(li); });
+  m.steps.forEach(s => {
+    const st = typeof s === "string" ? {t: s} : s;
+    const li = document.createElement("li");
+    const body = document.createElement("div"); body.className = "step-body";
+    const sp = document.createElement("span"); sp.textContent = st.t; body.appendChild(sp);
+    if(st.img){
+      const fig = document.createElement("figure"); fig.className = "step-img" + (st.size ? " " + st.size : "");
+      const img = new Image(); img.src = st.img; img.alt = st.cap || st.t; img.loading = "lazy";
+      img.onerror = () => fig.remove();
+      fig.appendChild(img);
+      if(st.cap){ const fc = document.createElement("figcaption"); fc.textContent = st.cap; fig.appendChild(fc); }
+      body.appendChild(fig);
+    }
+    li.appendChild(body); ol.appendChild(li);
+  });
   samples(m);
   addLabeled($("mOk"), "できた目安：", m.ok);
   addLabeled($("mTip"), "コツ：", m.tip);

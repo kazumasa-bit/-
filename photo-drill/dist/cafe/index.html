@@ -144,6 +144,13 @@ textarea{min-height:68px;resize:vertical}
 .foot{font-size:11px;color:var(--muted);text-align:center;display:flex;flex-direction:column;gap:4px}
 .foot button{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:11px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.step-body{min-width:0;display:flex;flex-direction:column;gap:8px}
+.step-img{margin:0;max-width:300px}
+.step-img.icon{max-width:76px}
+.step-img.tall{max-width:220px}
+.step-img img{display:block;width:100%;border-radius:10px;border:1px solid var(--line)}
+.step-img.icon img{border-radius:18px}
+.step-img figcaption{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
 
 </style>
 
@@ -266,7 +273,7 @@ window.DRILL = {
   },
   chapters: [
   {t:"最初にやる設定", s:"10分で写真が変わる", m:[
-    {id:"grid",t:"グリッドと水平をONにする",min:2,pop:true,why:"画面に線が出るだけで、傾きが消えてお皿がまっすぐ撮れます。",steps:["設定 → カメラ → 構図 を開く","「グリッド」と「水平」をON","カメラを開いて、9マスの線が出るか確認","真上から撮るとき、十字が重なって黄色になる位置を探す"],ok:"カメラに線が出て、まっすぐにすると黄色く変わる",tip:"ラテアートや丼を真上から撮るとき、十字が重なる位置がベストです。"},
+    {id:"grid",t:"グリッドと水平をONにする",min:2,pop:true,why:"画面に線が出るだけで、傾きが消えてお皿がまっすぐ撮れます。",steps:[{t:"ホーム画面の「設定」アプリを開く",img:"photos/common/settings-icon.jpg",size:"icon"},{t:"「カメラ」→「構図」を開く。最初は「グリッド」と「水平」が灰色（OFF）です",img:"photos/common/compose-off.jpg",cap:"灰色＝OFF"},{t:"「グリッド」と「水平」をタップして、緑（ON）にする",img:"photos/common/compose-on.jpg",cap:"緑＝ON。ほかの項目はそのままでOK"},{t:"カメラを開くと、画面に9マスの線が出ます。スマホをまっすぐ構えると、真ん中に黄色い横線が出ます",img:"photos/common/camera-grid.jpg",size:"tall",cap:"白い線がグリッド。真ん中の黄色い線が「水平」の合図"},"真上から撮るときは、十字のマークが重なって黄色くなる位置を探す"],ok:"カメラに9マスの線が出て、まっすぐ構えると黄色い横線が出る",tip:"黄色い線が出たら「まっすぐ」の合図。ラテアートや丼を真上から撮るときは、十字が重なる位置がベストです。"},
     {id:"keep",t:"好きな明るさを覚えさせる",min:3,why:"毎回明るさを直さなくて済みます。明るめが好きな人は必須。",steps:["設定 → カメラ → 設定を保持","「露出調整」と「フォトグラフスタイル」をON","カメラで明るさを少し上げる","アプリを閉じて開き直し、明るさが残っているか確認"],ok:"開き直しても明るさの数字が残っている",tip:"カフェ写真は +0.3〜+0.7 くらいの明るめがおすすめ。"},
     {id:"lens",t:"レンズをひと拭きして撮り比べ",min:2,pop:true,why:"一番かんたんで、一番効果があります。白いモヤが消えてくっきり。",steps:["明るい窓に向けて1枚","服やメガネ拭きでレンズを拭く","同じ場所でもう1枚","2枚を並べて比べる"],ok:"拭いた後の方がくっきりしている",tip:"スマホは指が触れやすいので、撮る前にひと拭きを習慣に。"},
     {id:"quicktake",t:"写真モードのまま動画を撮る",min:2,why:"注ぐ瞬間や湯気を、モードを切り替えずに動画で残せます。",steps:["シャッターを長押し → 動画が始まる","指を右の鍵マークへずらす → 指を離しても撮影が続く","赤いボタンで止める"],ok:"写真モードのまま動画が1本撮れた",tip:"ラテを注ぐ、チーズを伸ばすときに便利。"},
@@ -427,7 +434,21 @@ function openMission(id){
   $("mTitle").textContent = m.t;
   addLabeled($("mWhy"), "なぜ？ ", m.why);
   const ol = $("mSteps"); ol.textContent = "";
-  m.steps.forEach(s => { const li = document.createElement("li"); const sp = document.createElement("span"); sp.textContent = s; li.appendChild(sp); ol.appendChild(li); });
+  m.steps.forEach(s => {
+    const st = typeof s === "string" ? {t: s} : s;
+    const li = document.createElement("li");
+    const body = document.createElement("div"); body.className = "step-body";
+    const sp = document.createElement("span"); sp.textContent = st.t; body.appendChild(sp);
+    if(st.img){
+      const fig = document.createElement("figure"); fig.className = "step-img" + (st.size ? " " + st.size : "");
+      const img = new Image(); img.src = st.img; img.alt = st.cap || st.t; img.loading = "lazy";
+      img.onerror = () => fig.remove();
+      fig.appendChild(img);
+      if(st.cap){ const fc = document.createElement("figcaption"); fc.textContent = st.cap; fig.appendChild(fc); }
+      body.appendChild(fig);
+    }
+    li.appendChild(body); ol.appendChild(li);
+  });
   samples(m);
   addLabeled($("mOk"), "できた目安：", m.ok);
   addLabeled($("mTip"), "コツ：", m.tip);

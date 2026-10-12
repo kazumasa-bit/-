@@ -144,6 +144,13 @@ textarea{min-height:68px;resize:vertical}
 .foot{font-size:11px;color:var(--muted);text-align:center;display:flex;flex-direction:column;gap:4px}
 .foot button{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:11px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.step-body{min-width:0;display:flex;flex-direction:column;gap:8px}
+.step-img{margin:0;max-width:300px}
+.step-img.icon{max-width:76px}
+.step-img.tall{max-width:220px}
+.step-img img{display:block;width:100%;border-radius:10px;border:1px solid var(--line)}
+.step-img.icon img{border-radius:18px}
+.step-img figcaption{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
 
 </style>
 
@@ -266,7 +273,7 @@ window.DRILL = {
   },
   chapters: [
   {t:"最初にやる設定", s:"すぐ撮れる準備", m:[
-    {id:"grid",t:"グリッドと水平をONにする",min:2,why:"線があるだけで傾きが消え、写真が整って見えます。",steps:["設定 → カメラ → 構図 を開く","「グリッド」と「水平」をON","カメラを開いて線が出るか確認"],ok:"カメラに9マスの線が出た",tip:"水平線や机の線を、グリッドの線に合わせるだけでOK。"},
+    {id:"grid",t:"グリッドと水平をONにする",min:2,why:"線があるだけで傾きが消え、写真が整って見えます。",steps:[{t:"ホーム画面の「設定」アプリを開く",img:"photos/common/settings-icon.jpg",size:"icon"},{t:"「カメラ」→「構図」を開く。最初は「グリッド」と「水平」が灰色（OFF）です",img:"photos/common/compose-off.jpg",cap:"灰色＝OFF"},{t:"「グリッド」と「水平」をタップして、緑（ON）にする",img:"photos/common/compose-on.jpg",cap:"緑＝ON。ほかの項目はそのままでOK"},{t:"カメラを開くと、画面に9マスの線が出ます。スマホをまっすぐ構えると、真ん中に黄色い横線が出ます",img:"photos/common/camera-grid.jpg",size:"tall",cap:"白い線がグリッド。真ん中の黄色い線が「水平」の合図"}],ok:"カメラに9マスの線が出て、まっすぐ構えると黄色い横線が出る",tip:"黄色い線が出たら「まっすぐ」の合図。地面や机の線をグリッドの横線に合わせるだけでOK。"},
     {id:"lockscreen",t:"ロック画面から一瞬でカメラ",min:1,pop:true,why:"子どもの“今”は2秒で終わります。最速で起動できるように。",steps:["ロック画面で左にスワイプ","カメラが開くのを確認","（アクションボタン・カメラコントロールがある機種）設定でカメラに割り当てる"],ok:"ロック画面から2秒でカメラが開く",tip:"ポケットから出して左スワイプ、を体で覚えましょう。"},
     {id:"burstvol",t:"音量ボタンで連写できるようにする",min:2,pop:true,why:"動き回る子どもは連写が基本。ボタンを探さずに撮れます。",steps:["設定 → カメラ →「音量を上げるボタンでバースト」をON","カメラで音量＋を長押し","写真アプリで「選択」→ いい顔だけ残す"],ok:"音量ボタンで連写できた",tip:"いらない写真はその場で消すと、ストレージも安心。"},
     {id:"lens",t:"レンズをひと拭き",min:1,why:"小さな手でベタベタになりがち。拭くだけでくっきり。",steps:["服やメガネ拭きでレンズを拭く","拭く前と後で1枚ずつくらべる"],ok:"拭いた後の方がくっきり",tip:"撮る前のひと拭きを習慣に。"},
@@ -424,7 +431,21 @@ function openMission(id){
   $("mTitle").textContent = m.t;
   addLabeled($("mWhy"), "なぜ？ ", m.why);
   const ol = $("mSteps"); ol.textContent = "";
-  m.steps.forEach(s => { const li = document.createElement("li"); const sp = document.createElement("span"); sp.textContent = s; li.appendChild(sp); ol.appendChild(li); });
+  m.steps.forEach(s => {
+    const st = typeof s === "string" ? {t: s} : s;
+    const li = document.createElement("li");
+    const body = document.createElement("div"); body.className = "step-body";
+    const sp = document.createElement("span"); sp.textContent = st.t; body.appendChild(sp);
+    if(st.img){
+      const fig = document.createElement("figure"); fig.className = "step-img" + (st.size ? " " + st.size : "");
+      const img = new Image(); img.src = st.img; img.alt = st.cap || st.t; img.loading = "lazy";
+      img.onerror = () => fig.remove();
+      fig.appendChild(img);
+      if(st.cap){ const fc = document.createElement("figcaption"); fc.textContent = st.cap; fig.appendChild(fc); }
+      body.appendChild(fig);
+    }
+    li.appendChild(body); ol.appendChild(li);
+  });
   samples(m);
   addLabeled($("mOk"), "できた目安：", m.ok);
   addLabeled($("mTip"), "コツ：", m.tip);
