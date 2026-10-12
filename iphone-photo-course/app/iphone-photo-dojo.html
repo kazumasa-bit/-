@@ -1,0 +1,364 @@
+<title>iPhone撮影道場</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one-column phone app. Viewfinder-style "today's mission" up top, chapters as rolls of film below, mission opens as a bottom sheet. */
+:root{
+  --bg:#f3f5f6;
+  --surface:#ffffff;
+  --ink:#1b2328;
+  --muted:#5d6970;
+  --line:#dde3e6;
+  --focus:#ffcc00;      /* iPhone AE/AF lock yellow */
+  --focus-ink:#3a2f00;
+  --accent:#0b6e75;
+  --done:#2f8a4e;
+  --shade:rgba(15,22,26,.45);
+  --display:"Dela Gothic One","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101518;--surface:#182024;--ink:#e9eef0;--muted:#9aa8ae;--line:#2a353a;
+  --focus:#ffd426;--focus-ink:#2b2300;--accent:#4fc1c8;--done:#5cc47e;--shade:rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101518;--surface:#182024;--ink:#e9eef0;--muted:#9aa8ae;--line:#2a353a;
+  --focus:#ffd426;--focus-ink:#2b2300;--accent:#4fc1c8;--done:#5cc47e;--shade:rgba(0,0,0,.6);color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.65;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:20px 64px;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{margin:0;text-wrap:balance}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* header */
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--display);font-size:26px;line-height:1.2;letter-spacing:.02em}
+.brand small{display:block;font-family:var(--body);font-size:12px;color:var(--muted);letter-spacing:.08em;font-weight:500}
+.sync{font-size:11px;color:var(--muted);text-align:right;white-space:nowrap}
+.sync b{font-family:var(--mono);font-weight:500}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat .n{font-family:var(--mono);font-weight:700;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat .l{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--focus);width:0;transition:width .4s}
+
+/* viewfinder: today's mission */
+.vf{position:relative;padding:22px 20px 20px;background:var(--surface);border-radius:4px}
+.vf::before,.vf::after,.vf .c1,.vf .c2{content:"";position:absolute;width:22px;height:22px;border:3px solid var(--focus)}
+.vf::before{top:0;left:0;border-right:0;border-bottom:0}
+.vf::after{top:0;right:0;border-left:0;border-bottom:0}
+.vf .c1{bottom:0;left:0;border-right:0;border-top:0}
+.vf .c2{bottom:0;right:0;border-left:0;border-top:0}
+.lock{display:inline-block;background:var(--focus);color:var(--focus-ink);font-size:11px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:3px}
+.vf h2{font-size:20px;margin-top:10px;line-height:1.45}
+.vf p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+.meta{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:999px;padding:11px 20px;font-weight:700;cursor:pointer;background:var(--ink);color:var(--bg)}
+.btn.yellow{background:var(--focus);color:var(--focus-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* chapters */
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.sec-h h2{font-family:var(--display);font-size:18px;font-weight:400}
+.filter{display:flex;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chapters{display:flex;flex-direction:column;gap:14px}
+.ch{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ch-h{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 14px 10px;cursor:pointer;width:100%;background:none;border:0;text-align:left}
+.ch-no{font-family:var(--mono);font-weight:700;font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 7px}
+.ch-t{font-weight:700;font-size:15px;line-height:1.4;min-width:0}
+.ch-t span{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.ch-p{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.frames{display:flex;gap:3px;padding:0 14px 12px}
+.frames i{flex:1;height:5px;border-radius:2px;background:var(--line)}
+.frames i.on{background:var(--done)}
+.list{list-style:none;margin:0;padding:0 8px 8px;display:flex;flex-direction:column}
+.m{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 6px;border-top:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left}
+.box{width:22px;height:22px;border:2px solid var(--line);border-radius:5px;display:grid;place-items:center;font-size:13px;color:#fff}
+.m.is-done .box{background:var(--done);border-color:var(--done)}
+.m.is-done .mt{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.mt{font-size:14px;line-height:1.45;min-width:0}
+.tag{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.tag.star{color:var(--accent)}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:var(--shade);z-index:10}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;max-height:88%;overflow:auto;background:var(--surface);border-radius:16px 16px 0 0;padding:8px 16px calc(24px + env(safe-area-inset-bottom,0px));max-width:600px;margin:0 auto;box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 12px}
+.sheet .kicker{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.sheet h3{font-size:20px;line-height:1.45;margin:4px 0 10px}
+.why{background:var(--bg);border-radius:8px;padding:10px 12px;font-size:14px}
+.why b{color:var(--accent)}
+.steps{margin:14px 0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:26px 1fr;gap:8px;font-size:14.5px}
+.steps li::before{content:counter(s);font-family:var(--mono);font-weight:700;font-size:12px;width:22px;height:22px;border-radius:50%;background:var(--focus);color:var(--focus-ink);display:grid;place-items:center;margin-top:2px}
+.ok{border-left:3px solid var(--done);padding:4px 0 4px 10px;font-size:14px;margin:12px 0}
+.ok b{color:var(--done)}
+.talk{border-left:3px solid var(--focus);padding:4px 0 4px 10px;font-size:14px;margin:12px 0}
+label.ml{display:block;font-size:12px;color:var(--muted);margin:14px 0 4px}
+textarea{width:100%;min-height:72px;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;resize:vertical}
+.sheet .row{margin-top:14px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;z-index:20}
+.note{font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand"><small>講師になるための</small>iPhone撮影道場</h1>
+    <div class="sync" id="sync">記録：<b>確認中…</b></div>
+  </header>
+
+  <section class="stats" aria-label="進み具合">
+    <div class="stat"><div class="n" id="sDone">0</div><div class="l">できた</div><div class="bar"><i id="sBar"></i></div></div>
+    <div class="stat"><div class="n" id="sLeft">0</div><div class="l">のこり</div></div>
+    <div class="stat"><div class="n" id="sDays">0</div><div class="l">練習した日</div></div>
+  </section>
+
+  <section class="vf" id="today" aria-label="次のミッション">
+    <i class="c1"></i><i class="c2"></i>
+    <span class="lock">AE/AF ロック ・ 次のミッション</span>
+    <h2 id="tTitle"></h2>
+    <p id="tWhy"></p>
+    <div class="row">
+      <button class="btn yellow" id="tOpen" type="button">やってみる</button>
+      <span class="meta" id="tMeta"></span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <h2>ミッション一覧</h2>
+      <div class="filter" role="group" aria-label="表示">
+        <button class="chip" type="button" data-f="all" aria-pressed="true">全部</button>
+        <button class="chip" type="button" data-f="todo" aria-pressed="false">まだ</button>
+        <button class="chip" type="button" data-f="done" aria-pressed="false">できた</button>
+      </div>
+    </div>
+    <div class="chapters" id="chapters" style="margin-top:12px"></div>
+  </section>
+
+  <p class="note">★ は講座でそのまま見せられる「つかみネタ」。全部できたら教えられる状態です。</p>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+  <div class="grab"></div>
+  <div class="kicker" id="mKicker"></div>
+  <h3 id="mTitle"></h3>
+  <div class="why" id="mWhy"></div>
+  <ol class="steps" id="mSteps"></ol>
+  <div class="ok" id="mOk"></div>
+  <div class="talk" id="mTalk"></div>
+  <label class="ml" for="mMemo">気づいたこと・自分の言葉でメモ（講座で話す練習）</label>
+  <textarea id="mMemo" placeholder="例：2倍にしたらお皿がまんまるになった"></textarea>
+  <div class="row">
+    <button class="btn yellow" id="mDone" type="button">できた！</button>
+    <button class="btn ghost" id="mClose" type="button">閉じる</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const CH = [
+ {no:"01",t:"設定を整える",s:"最初の10分で写真が変わる",m:[
+  {id:"grid",t:"グリッドと水平をONにする",min:2,why:"線があるだけで傾きが消え、三分割構図が自然に取れる。受講者に一番最初にやってもらう設定。",steps:["設定 → カメラ → 構図 を開く","「グリッド」と「水平（レベル）」をON","カメラを開いて、画面に線が出るか確認","スマホを少し傾けて、水平の線が黄色になる瞬間を見る"],ok:"カメラに9マスの線が出て、まっすぐにすると線が黄色く変わる",talk:"「今日いちばん効く設定です。これだけで写真が急に上手く見えます」"},
+  {id:"keep",t:"「設定を保持」で好みを固定する",min:3,why:"露出やフォトグラフスタイルが毎回リセットされない。料理を明るめで撮る人は必須。",steps:["設定 → カメラ → 設定を保持","「カメラモード」「露出調整」「フォトグラフスタイル」をON","カメラで露出を少し上げて、一度アプリを閉じる","もう一度開いて、明るさが残っているか確認"],ok:"カメラを開き直しても露出の数字が残っている",talk:"「毎回明るさを直すのが面倒な人は、ここで固定できます」"},
+  {id:"burstvol",t:"音量ボタンで連写できるようにする",min:2,why:"子ども・ペット・注ぐ瞬間など、動くものを逃さない。",steps:["設定 → カメラ →「音量を上げるボタンでバースト」をON","カメラで音量＋ボタンを長押し","写真アプリで「選択」を押してベストを残す"],ok:"音量＋長押しで枚数のカウンターが増える",talk:"「シャッターボタンを探さなくても、横のボタンで連写できます」"},
+  {id:"format",t:"写真の保存形式と画素数を知る",min:4,why:"受講者に「容量が足りない」と言われた時に答えられるように。",steps:["設定 → カメラ → フォーマット を開く","「高効率」と「互換性優先」の違いを読む","自分の機種に48MP / ProRAWの項目があるか確認","1枚撮って、写真アプリで上にスワイプし、画素数とサイズを見る"],ok:"自分の機種で選べる形式と、1枚の容量を言える",talk:"「普段は高効率、大きく印刷したい時だけ48MP」"},
+  {id:"lens",t:"レンズを服でひと拭きして撮り比べ",star:true,min:2,why:"一番かんたんで一番効果がある。逆光のモヤが消える。",steps:["わざと指でレンズを触ってから、明るい窓に向けて1枚","服やメガネ拭きでレンズを拭く","同じ場所でもう1枚","2枚を並べてモヤの違いを見る"],ok:"拭いた後の方が、くっきりして白いモヤが少ない",talk:"「みなさん、まずレンズを拭いてください。これで画質が上がります」"}
+ ]},
+ {no:"02",t:"シャッターの隠し技",s:"知ってると“できる人”に見える",m:[
+  {id:"quicktake",t:"写真モードのまま動画を撮る（QuickTake）",star:true,min:2,why:"モードを切り替えずに動画へ。湯気や注ぐ瞬間に使える。",steps:["写真モードでシャッターを長押し → 動画が始まる","指を右の鍵マークへスライド → 指を離しても撮影が続く","止めるときは赤いボタン"],ok:"写真モードのまま動画が1本撮れた",talk:"「長押しすると動画、右にずらすと手を離せます」"},
+  {id:"burst",t:"シャッターを左にスライドして連写",star:true,min:2,why:"動く瞬間のベストを後から選べる。",steps:["シャッターボタンを左にスライドしたまま押さえる","数字が増えるのを確認して離す","写真アプリで連写写真を開き「選択」","いい1枚だけ残す"],ok:"連写から1枚を選んで保存できた",talk:"「左にずらすと連写。あとで一番いい顔を選べます」"},
+  {id:"timer",t:"タイマーは10枚連写になっていることを確かめる",star:true,min:3,why:"集合写真の「目つぶり」対策。講座で必ず「へぇ〜」が出る。",steps:["上の「^」→ タイマー → 3秒","スマホを置いて撮影","写真アプリで開くと連写になっている","目を閉じていない1枚を選ぶ"],ok:"タイマー撮影の写真が連写として保存されている",talk:"「タイマーは実は10枚撮ってるんです」"},
+  {id:"volume",t:"音量ボタンをシャッターにして横持ち撮影",min:2,why:"一眼レフのように両手で持てて手ブレが減る。",steps:["カメラを横向きに持つ","右手の人差し指で音量ボタンを押して撮影","画面タップよりブレないか比べる"],ok:"音量ボタンで撮影できる",talk:"「両手でしっかり持つと手ブレが減ります」"},
+  {id:"lockscreen",t:"ロック画面から一瞬でカメラを起動",min:1,why:"シャッターチャンスを逃さない。",steps:["ロック画面で左にスワイプ","（アクションボタンがある機種）設定 → アクションボタン → カメラ","（16以降）カメラコントロールを1回押す"],ok:"ロック画面から2秒以内にカメラが開く",talk:"「ロック画面から左へ。これが一番速いです」"},
+  {id:"remote",t:"Apple Watch／イヤホンでリモート撮影",min:4,why:"三脚で自分も入る集合写真。持っていれば講座で実演できる。",steps:["Apple Watchで「カメラリモート」を開く（ない場合は有線イヤホンの音量ボタン）","iPhoneを置いて離れる","ウォッチの画面で写りを確認してシャッター"],ok:"離れた場所からシャッターを切れた",talk:"「撮る人がいないときは、時計がリモコンになります」"}
+ ]},
+ {no:"03",t:"ピントと明るさ",s:"料理撮影の土台",m:[
+  {id:"aeaf",t:"長押しでAE/AFロック",star:true,min:3,why:"構図を少し動かしても、ピントと明るさが変わらない。物撮り・料理の必須ワザ。",steps:["コップなど小物を置く","画面のコップを長押し → 黄色い「AE/AFロック」が出る","スマホを少し動かしても明るさが変わらないことを確認","もう一度タップで解除"],ok:"黄色い「AE/AFロック」表示を出せる",talk:"「長押しすると、ピントと明るさが固定されます」"},
+  {id:"exposure",t:"☀️スライドで明るさを変えて3枚比べ",min:4,why:"明るめ＝カフェ風、暗め＝高級感。露出で印象が変わることを体で覚える。",steps:["料理か飲み物をタップ","横に出る☀️を下げて1枚（暗め）","そのままで1枚","☀️を上げて1枚（明るめ）","3枚並べて、どれが美味しそうか自分の言葉で言う"],ok:"3枚の違いを説明できる",talk:"「迷ったら少し明るめ。でも白いお皿が真っ白に飛ばない程度に」"},
+  {id:"whiteclip",t:"白飛びしたら戻らない、を確かめる",min:4,why:"「iPhoneは白飛びに弱く、暗い部分には強い」を体験で語れるようにする。",steps:["窓の外が入る場所で、明るめに撮る","暗めにもう1枚撮る","両方を編集で明るさ・暗さを逆に直してみる","どちらが元に戻せたか比べる"],ok:"暗めの写真の方がきれいに直せた",talk:"「迷ったら暗めに撮って後で明るく。逆はできません」"},
+  {id:"night",t:"ナイトモードの秒数を手動で変える",min:5,why:"暗いお店や夜景で受講者に聞かれる。",steps:["暗い部屋でカメラを開く → 黄色い月マーク","月マークをタップして秒数を最大にする","スマホを机に置いて撮る","手持ちと置いた時の秒数の違いを見る"],ok:"置くと秒数が長くなることを確認できた",talk:"「暗いところはスマホをどこかに置くと、きれいに撮れます」"}
+ ]},
+ {no:"04",t:"レンズ（画角）の使い分け",s:"2倍が料理の正解",m:[
+  {id:"zoom4",t:"同じ料理を0.5x / 1x / 2x / 3x以上で撮り比べ",star:true,min:6,why:"講座で一番わかりやすいビフォーアフター。2倍だとお皿がまんまるになる。",steps:["お皿を1つテーブルに置く","0.5xで近づいて1枚","1xで1枚","2xで少し下がって、同じ大きさになるように1枚","あれば3x/5xでも","並べてお皿の形の違いを見る"],ok:"2倍で撮るとお皿が楕円にならないことを確認できた",talk:"「料理は2倍で少し離れる。これだけでプロっぽくなります」"},
+  {id:"dial",t:"ズームダイヤルで細かく調整",min:2,why:"1.3倍などちょうどいい画角を作れる。",steps:["画面下の「1x」を長押し","出てきたダイヤルを指でなぞる","好きな倍率で止めて撮る"],ok:"ダイヤルで中間の倍率にできる",talk:"「数字を長押しすると、ダイヤルで細かく決められます」"},
+  {id:"compress",t:"望遠の「圧縮効果」で背景を大きく",min:5,why:"夕日や街並みを大きく見せる。離れて望遠にするだけ。",steps:["人か物を手前に、遠くに建物がある場所へ","1xで近くから1枚","下がって望遠で、手前を同じ大きさにして1枚","背景の大きさを比べる"],ok:"望遠の方が背景が大きく近く見える",talk:"「離れてズームすると、後ろの景色が大きく写ります」"},
+  {id:"macro",t:"マクロで身の回りを5枚",star:true,min:6,why:"「何これ？」クイズは講座で盛り上がる鉄板ワーク。",steps:["（13 Pro以降）被写体に2〜3cmまで近づく","画面に花マークが出たらマクロ","パンの断面、ラテの泡、布、水滴、野菜などを5枚","友だちに何か当ててもらう"],ok:"5枚撮って、1枚でも当てられなかったら成功",talk:"「これ何だと思いますか？」"}
+ ]},
+ {no:"05",t:"Live Photos・ポートレート",s:"撮った後で変えられる魔法",m:[
+  {id:"longexp",t:"Live Photosで長時間露光（水を絹のように）",star:true,min:6,why:"講座のつかみ。蛇口の水や噴水が絹のようになる。",steps:["Live Photos（丸いマーク）をON","蛇口から水を出して、スマホを固定して撮る","写真アプリで開き、左上「LIVE」→「長時間露光」","普通の写真と比べる"],ok:"水が白い絹のように写った",talk:"「同じ写真が、ボタン1つでこうなります」"},
+  {id:"loop",t:"ループ・バウンス・キー写真を全部試す",min:5,why:"湯気、乾杯、ジャンプをSNS用の動く写真にする。",steps:["湯気や乾杯をLive Photosで撮る","LIVE → ループ","LIVE → バウンス","編集 → Live Photosマーク → 下のコマから「キー写真に設定」"],ok:"3つの効果の違いを言える",talk:"「目をつぶってても、3秒の中から選び直せます」"},
+  {id:"portraitafter",t:"ポートレートのボケとピントを後から変える",star:true,min:5,why:"「撮った後でボケを変えられる」は驚かれる。",steps:["ポートレートモードで飲み物を撮る","編集 → 左上の「f」でボケ量を変える","（15以降）別の場所をタップしてピント位置を変える","f2.8くらいが自然か比べる"],ok:"撮影後にボケ量を変えられた",talk:"「ボケは後から決められます。f1.4はやりすぎ注意」"},
+  {id:"lighting",t:"照明エフェクト「ステージ照明」で背景を黒に",min:4,why:"散らかった部屋でもスタジオ風になる。",steps:["ポートレートモードで人かペットを撮る","編集 → 照明エフェクトを左右にスライド","ステージ照明・スタジオ照明を比べる"],ok:"背景が黒くなる効果を出せた",talk:"「部屋が散らかっていても大丈夫」"},
+  {id:"cutout",t:"写真の料理を長押しで切り抜き → ステッカー化",star:true,min:3,why:"一番「へぇ〜」が出る機能。メニュー表や資料作りにも。",steps:["料理か人の写真を開く","料理を長押し → 光の線が走る","「コピー」または「ステッカーに追加」","メッセージに貼り付けてみる"],ok:"背景のない料理だけの画像を作れた",talk:"「長押しするだけで切り抜けます」"}
+ ]},
+ {no:"06",t:"料理・カフェ撮影",s:"講座のメイン",m:[
+  {id:"angle3",t:"3つのアングルで同じ料理を撮る",star:true,min:8,why:"真上・斜め45°・真横。料理によって正解が違うことを説明できるように。",steps:["真上：水平の十字が重なる位置で（ピザ・丼向き）","斜め45°：座った目線で（ほとんどの料理）","真横：テーブルすれすれ（ハンバーガー・パフェ・ドリンク）","3枚並べて「この料理はどれが正解か」を自分で決める"],ok:"3枚撮り、料理に合うアングルを理由つきで言える",talk:"「迷ったら斜め45°。食べる人の目線です」"},
+  {id:"window",t:"窓に対して料理を回して4方向の光を比べる",star:true,min:10,why:"半逆光（斜め後ろからの光）が美味しそうに見える理由を体験する。",steps:["窓際に料理を置く","窓が自分の後ろ（順光）で1枚","窓が横（サイド光）で1枚","窓が料理の斜め奥（半逆光）で1枚","窓が真正面奥（逆光）で1枚","ツヤ・立体感を比べる"],ok:"半逆光が一番ツヤと立体感が出ると説明できる",talk:"「窓際の席を選ぶ。これがカフェ撮影の8割です」"},
+  {id:"reflector",t:"白いナプキンでレフ板",min:4,why:"逆光で暗くなる手前を明るくする。道具なしでできる。",steps:["逆光で料理を撮る","手前が暗いのを確認","白いナプキンや紙を手前に立てる","もう1枚撮って比べる"],ok:"手前の影が明るくなった",talk:"「白い紙1枚がレフ板になります」"},
+  {id:"hamidashi",t:"はみ出し構図と余白構図",min:5,why:"インスタで多い「寄り」と、文字入れ用の「余白」。",steps:["お皿全体を入れて1枚","お皿をフレームから少し切って寄る（はみ出し）","上に空間を大きく残して1枚（余白）","どれがSNS向きか考える"],ok:"はみ出しと余白の違いを言える",talk:"「お皿は全部入れなくていい」"},
+  {id:"diag",t:"対角線と奇数の法則",min:5,why:"フォークを斜めに、お菓子は3個。動きとリズムが出る。",steps:["フォークやお箸を斜めに置いて撮る","マカロンやクッキーを2個→3個に変えて撮る","どちらが自然か比べる"],ok:"斜めと奇数の効果を説明できる",talk:"「お菓子は3つか5つ。偶数より自然に見えます」"},
+  {id:"sizzle",t:"手を入れてシズル感（持ち上げる・注ぐ）",min:6,why:"「今から食べる」感じが出る。Live Photosかバーストで。",steps:["Live PhotosをON","フォークで持ち上げる、ソースを注ぐ、カップを両手で持つ","キー写真かバーストでベストを選ぶ"],ok:"動きのある1枚が撮れた",talk:"「人の手が入ると、温かさが伝わります」"},
+  {id:"steam",t:"湯気を写す（暗い背景＋逆光）",min:6,why:"出来立て感。条件がわかれば誰でも撮れる。",steps:["温かい飲み物を用意","背景を暗い場所にする","光が奥から来る位置に置く","露出を少し下げて撮る（Live Photosのループも）"],ok:"湯気が見える写真が撮れた",talk:"「湯気は暗い背景と逆光で写ります。出来立て30秒が勝負」"},
+  {id:"styling",t:"お皿のフチを拭く・ちょい散らし",min:5,why:"プロが一番やっていること。ビフォーアフターで見せられる。",steps:["そのままの状態で1枚","お皿のフチの汚れを拭く","ハーブ・パンくず・粉糖を少しだけ散らす","布やカトラリーを足してもう1枚"],ok:"スタイリング前後のビフォーアフターができた",talk:"「フチを拭くだけで、ぜんぜん違います」"}
+ ]},
+ {no:"07",t:"編集と色レシピ",s:"同じ写真が別物になる",m:[
+  {id:"recipe1",t:"色レシピ①カフェ風を手で入れる",star:true,min:6,why:"数値を覚えておくと、講座で受講者のスマホをその場で直せる。",steps:["料理写真を開いて「編集」","露出+20 / ブリリアンス+30 / ハイライト-30 / シャドウ+25","コントラスト-15 / ブラックポイント-5 / 彩度+5 / 暖かみ+10 / シャープネス+10","写真をタップして元と比べる"],ok:"ふんわり明るいカフェ風になった",talk:"「数字はこのままメモして持って帰ってください」"},
+  {id:"recipe2",t:"色レシピ②こってり濃厚を入れる",min:6,why:"ラーメン・焼肉・揚げ物用。カフェ風との違いを説明できるように。",steps:["茶色い料理の写真を編集","露出+5 / ブリリアンス+20 / コントラスト+20 / ブラックポイント+10","彩度+15 / 自然な彩度+20 / 暖かみ+20 / シャープネス+25 / ビネット+15","カフェ風と並べて違いを見る"],ok:"同じ写真で2つの雰囲気を作れた",talk:"「料理によってレシピを変えます」"},
+  {id:"warmth",t:"青っぽい写真を「暖かみ」で直す",min:4,why:"蛍光灯の青みは食欲を落とす。一番よく使う補正。",steps:["蛍光灯の下で料理を撮る","編集 → 暖かみを+15〜+25","青みが消えて美味しそうになるか確認"],ok:"青白さがなくなった",talk:"「青は食欲が落ちる色。暖かみを足すだけで直ります」"},
+  {id:"copypaste",t:"編集をコピー＆ペーストで一括適用",star:true,min:4,why:"インスタの統一感が一気に出る。講座で必ずウケる。",steps:["編集した写真で右上「…」→「編集内容をコピー」","アルバムで「選択」して数枚選ぶ","「…」→「編集内容をペースト」"],ok:"複数の写真に同じ色が一度に入った",talk:"「1枚直したら、残りは貼り付けるだけ」"},
+  {id:"cleanup",t:"クリーンアップで写り込みを消す",min:4,why:"お店で他のお客さんやおしぼりが写った時に。対応機種のみ。",steps:["写り込みのある写真を編集","「クリーンアップ」を選ぶ","消したい物を丸で囲むかなぞる"],ok:"写り込みを消せた（非対応機種はスキップでOK）",talk:"「写っちゃった物は、なぞるだけで消せます」"},
+  {id:"style",t:"フォトグラフスタイルで「自分の色」を決める",min:6,why:"撮るたびに自分の色になる。講座のブランドにもなる。",steps:["カメラ上部のメニューからフォトグラフスタイルを開く","暖かめ・明るめなど何種類か試す","（16以降）パッドで色とトーンを調整","気に入ったものを決めて「設定を保持」"],ok:"自分のスタイルを1つ決めた",talk:"「フィルターと違って、肌の色を守ったまま雰囲気を変えられます」"}
+ ]},
+ {no:"08",t:"面白い撮り方",s:"SNSでウケるネタ",m:[
+  {id:"puddle",t:"水たまりリフレクション（逆さま持ち）",star:true,min:5,why:"簡単なのにインパクト大。水たまりがなければ水をまくだけ。",steps:["水たまり（またはペットボトルの水をまく）","iPhoneを逆さまに持ち、レンズを水面ギリギリに","景色が鏡のように映る位置で撮る","編集で上下反転してみる"],ok:"水面に景色が映った写真が撮れた",talk:"「スマホを逆さまに持つのがコツです」"},
+  {id:"pano",t:"パノラマ分身の術",star:true,min:6,why:"友だちと一緒に盛り上がるネタ。講座の休憩タイムに。",steps:["友だちに左端に立ってもらう","パノラマでゆっくりスライド","カメラが通り過ぎたら友だちが先回りして右側へ","1枚に2〜3人の同じ人が写る"],ok:"同じ人が2人以上写った",talk:"「カメラより先に走ってください！」"},
+  {id:"forced",t:"遠近法トリック（手のひらに乗せる）",min:5,why:"子どもにも大人にもウケる。",steps:["手前に手、遠くに人や建物","しゃがんで低い位置から","0.5xで手と奥の両方にピントが合うように","手のひらに乗っているように位置を合わせる"],ok:"小さな人や建物が手に乗っているように見える",talk:"「低く構えると成功しやすいです」"},
+  {id:"lowangle",t:"地面すれすれの超ローアングル",min:4,why:"いつもの景色がダイナミックに。足長写真にも。",steps:["iPhoneを逆さまに持ってレンズを下に","地面に近づけて0.5xで撮る","落ち葉や花びらを手前に入れる"],ok:"いつもと違う迫力のある1枚になった",talk:"「目の高さから撮らない、が上達のコツ」"},
+  {id:"silhouette",t:"シルエット写真",min:5,why:"夕日や明るい窓を背景に。露出の理解の総仕上げ。",steps:["明るい窓や夕日の前に人を立たせる","空（明るい所）を長押ししてAE/AFロック","露出を下げて人を真っ黒に","ポーズを変えて数枚"],ok:"人が黒いシルエットになった",talk:"「明るいところに合わせると、人が影になります」"},
+  {id:"frontbokeh",t:"前ボケでエモくする",min:4,why:"手前に物を入れるだけで雰囲気が出る。料理にも使える。",steps:["2xにする","レンズのすぐ前に花・グラス・指を入れる","奥の被写体にピントを合わせる"],ok:"手前がふんわりボケた写真が撮れた",talk:"「レンズの前に何か入れるだけでおしゃれになります」"}
+ ]},
+ {no:"09",t:"講師の練習",s:"人に教えられて本当に“できた”",m:[
+  {id:"teach1",t:"家族か友だちに5分でAE/AFロックを教える",min:10,why:"自分が説明できるかが一番の確認。",steps:["相手のiPhoneで教える（自分のでやらない）","やり方を言う → 相手にやってもらう → できたら褒める","相手がつまずいたところをメモ"],ok:"相手が1人でAE/AFロックを出せた",talk:"「では、みなさんのスマホでやってみましょう」"},
+  {id:"teach2",t:"「2倍で撮るだけ」ビフォーアフターを作る",min:15,why:"講座の最初に見せるつかみ素材。インスタ投稿にも使える。",steps:["同じ料理を1xで近づいて／2xで離れて撮る","2枚を並べてスクショか編集アプリで1枚に","説明文を3行で書く"],ok:"人に見せられるビフォーアフター画像が1つできた",talk:"「左が1倍、右が2倍。何が違うかわかりますか？」"},
+  {id:"teach3",t:"90分講座の最初の10分を声に出して練習",min:15,why:"自己紹介と最初のつかみで講座の印象が決まる。",steps:["自己紹介（1分）","今日できるようになること（1分）","つかみネタを3つ実演（長押し切り抜き・タイマー連写・2倍）","スマホで自分を録画して見返す"],ok:"10分を止まらずに話せた",talk:"「今日帰るころには、料理写真がこう変わります」"}
+ ]}
+];
+const ALL = CH.flatMap(c => c.m.map(m => ({...m, ch:c})));
+let state = {done:{}, memo:{}, days:[]};
+let filter = "all", openId = null, ref = null, saving = Promise.resolve(), memoTimer = null;
+const $ = id => document.getElementById(id);
+const today = () => new Date().toLocaleDateString("sv-SE");
+
+function render(){
+  const n = Object.keys(state.done).filter(k => ALL.some(m => m.id === k)).length;
+  $("sDone").textContent = n;
+  $("sLeft").textContent = ALL.length - n;
+  $("sDays").textContent = (state.days || []).length;
+  $("sBar").style.width = Math.round(n / ALL.length * 100) + "%";
+  const next = ALL.find(m => !state.done[m.id]);
+  if(next){
+    $("tTitle").textContent = next.t;
+    $("tWhy").textContent = next.why;
+    $("tMeta").textContent = `CH ${next.ch.no} ・ 約${next.min}分${next.star ? " ・ ★つかみネタ" : ""}`;
+    $("tOpen").hidden = false; $("tOpen").onclick = () => openMission(next.id);
+  } else {
+    $("tTitle").textContent = "全ミッション達成！講座を開ける状態です";
+    $("tWhy").textContent = "メモを見返して、自分の言葉で話す練習を続けましょう。";
+    $("tMeta").textContent = ""; $("tOpen").hidden = true;
+  }
+  const box = $("chapters"); box.textContent = "";
+  CH.forEach(c => {
+    const items = c.m.filter(m => filter === "all" || (filter === "done") === !!state.done[m.id]);
+    if(!items.length) return;
+    const d = c.m.filter(m => state.done[m.id]).length;
+    const el = document.createElement("article"); el.className = "ch";
+    el.innerHTML = `<div class="ch-h"><span class="ch-no">CH ${c.no}</span><div class="ch-t"></div><span class="ch-p">${d}/${c.m.length}</span></div><div class="frames">${c.m.map(m => `<i class="${state.done[m.id] ? "on" : ""}"></i>`).join("")}</div><ul class="list"></ul>`;
+    const t = el.querySelector(".ch-t"); t.textContent = c.t; const s = document.createElement("span"); s.textContent = c.s; t.appendChild(s);
+    const ul = el.querySelector(".list");
+    items.forEach(m => {
+      const li = document.createElement("li");
+      const b = document.createElement("button"); b.type = "button";
+      b.className = "m" + (state.done[m.id] ? " is-done" : "");
+      b.innerHTML = `<span class="box" aria-hidden="true">${state.done[m.id] ? "✓" : ""}</span><span class="mt"></span><span class="tag${m.star ? " star" : ""}">${m.star ? "★ " : ""}${m.min}分</span>`;
+      b.querySelector(".mt").textContent = m.t;
+      b.setAttribute("aria-label", m.t + (state.done[m.id] ? "（できた）" : ""));
+      b.onclick = () => openMission(m.id);
+      li.appendChild(b); ul.appendChild(li);
+    });
+    box.appendChild(el);
+  });
+  if(openId) fillSheet();
+}
+
+function fillSheet(){
+  const m = ALL.find(x => x.id === openId); if(!m) return;
+  $("mKicker").textContent = `CH ${m.ch.no} ${m.ch.t} ・ 約${m.min}分${m.star ? " ・ ★つかみネタ" : ""}`;
+  $("mTitle").textContent = m.t;
+  $("mWhy").innerHTML = "<b>なぜ覚える？</b> "; $("mWhy").append(m.why);
+  const ol = $("mSteps"); ol.textContent = "";
+  m.steps.forEach(s => { const li = document.createElement("li"); const sp = document.createElement("span"); sp.textContent = s; li.appendChild(sp); ol.appendChild(li); });
+  $("mOk").innerHTML = "<b>できた目安：</b>"; $("mOk").append(m.ok);
+  $("mTalk").innerHTML = "<b>講座でのひとこと：</b>"; $("mTalk").append(m.talk);
+  if(document.activeElement !== $("mMemo")) $("mMemo").value = (state.memo || {})[m.id] || "";
+  const d = !!state.done[m.id];
+  $("mDone").textContent = d ? "できた を取り消す" : "できた！";
+  $("mDone").className = d ? "btn ghost" : "btn yellow";
+}
+
+function openMission(id){
+  openId = id; fillSheet();
+  $("scrim").hidden = false; $("sheet").hidden = false; $("sheet").scrollTop = 0;
+  $("mClose").focus();
+}
+function closeSheet(){
+  flushMemo();
+  openId = null; $("scrim").hidden = true; $("sheet").hidden = true;
+}
+function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 1800); }
+
+function markDay(){ const t = today(); state.days = state.days || []; if(!state.days.includes(t)) state.days.push(t); }
+
+$("mDone").onclick = () => {
+  const m = ALL.find(x => x.id === openId); if(!m) return;
+  if(state.done[m.id]) { delete state.done[m.id]; }
+  else { state.done[m.id] = today(); markDay(); toast("ナイス！ 1つ覚えた"); }
+  save(); render();
+  if(state.done[m.id]) setTimeout(closeSheet, 500);
+};
+$("mClose").onclick = closeSheet;
+$("scrim").onclick = closeSheet;
+document.addEventListener("keydown", e => { if(e.key === "Escape" && openId) closeSheet(); });
+$("mMemo").addEventListener("input", () => {
+  if(!openId) return;
+  state.memo = state.memo || {}; state.memo[openId] = $("mMemo").value;
+  clearTimeout(memoTimer); memoTimer = setTimeout(() => { memoTimer = null; save(); }, 900);
+});
+function flushMemo(){ if(memoTimer){ clearTimeout(memoTimer); memoTimer = null; save(); } }
+document.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+  filter = b.dataset.f;
+  document.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  render();
+});
+
+/* storage: shared db doc (all devices + Claude can read), localStorage as fallback */
+function setSync(t){ $("sync").innerHTML = "記録：<b></b>"; $("sync").querySelector("b").textContent = t; }
+function local(write){
+  try{ if(write) localStorage.setItem("dojo", JSON.stringify(state)); else { const v = localStorage.getItem("dojo"); if(v) state = Object.assign({done:{},memo:{},days:[]}, JSON.parse(v)); } }catch(e){}
+}
+function save(){
+  if(openId){ state.memo = state.memo || {}; state.memo[openId] = $("mMemo").value; }
+  local(true);
+  if(!ref) return;
+  const body = {done:{...state.done}, memo:{...state.memo}, days:[...(state.days||[])], updated:new Date().toISOString()};
+  saving = saving.then(() => ref.set(body)).then(() => setSync("どの端末でも同期")).catch(e => setSync(e && e.code === "invalid_argument" ? "この端末だけに保存" : "保存できませんでした"));
+}
+local(false); render();
+(async () => {
+  const db = window.claude && claude.use ? await claude.use("db") : null;
+  if(!db){ setSync("この端末だけに保存"); return; }
+  ref = db.doc("progress/main");
+  let first = true;
+  ref.onSnapshot(snap => {
+    if(snap.exists){
+      const d = snap.data();
+      if(!snap.metadata.hasPendingWrites){
+        state = {done:{...(d.done||{})}, memo:{...(d.memo||{})}, days:[...(d.days||[])]};
+        local(true); render();
+      }
+    } else if(first && Object.keys(state.done).length){ save(); }
+    first = false; setSync("どの端末でも同期");
+  }, () => setSync("この端末だけに保存"));
+})();
+</script>
