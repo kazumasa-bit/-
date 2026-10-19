@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>こども写真ドリル</title>
+<meta name="description" content="iPhoneで、わが子の“いい顔”を逃さない">
+<meta name="theme-color" content="#2a72c9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="こども写真">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{--v-accent:#2a72c9;--v-accent-dark:#7db6ff}
+/* Layout: one-column phone app. Viewfinder card for the next mission, chapters as film strips, missions open as a bottom sheet. Version colors come from --accent (set per drill). */
+:root{
+  --bg:#f6f4f2;
+  --surface:#ffffff;
+  --ink:#1f2326;
+  --muted:#636a70;
+  --line:#e2dfdc;
+  --focus:#ffcc00;
+  --focus-ink:#3a2f00;
+  --accent:var(--v-accent);
+  --accent-ink:#ffffff;
+  --done:#2f8a4e;
+  --shade:rgba(20,22,24,.45);
+  --display:"Dela Gothic One","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131517;--surface:#1c1f22;--ink:#eceeef;--muted:#a0a7ad;--line:#2d3236;
+  --focus:#ffd426;--focus-ink:#2b2300;--accent:var(--v-accent-dark);--accent-ink:#141618;--done:#5cc47e;--shade:rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131517;--surface:#1c1f22;--ink:#eceeef;--muted:#a0a7ad;--line:#2d3236;
+  --focus:#ffd426;--focus-ink:#2b2300;--accent:var(--v-accent-dark);--accent-ink:#141618;--done:#5cc47e;--shade:rgba(0,0,0,.6);color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7;-webkit-text-size-adjust:100%;font-weight:500}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:18px 72px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{margin:0;text-wrap:balance}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+a{color:var(--accent)}
+
+.top{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;flex:none;border-radius:11px;background:var(--accent);position:relative}
+.logo::before{content:"";position:absolute;inset:11px;border:2.5px solid var(--focus);border-radius:2px}
+.brand{min-width:0}
+.brand h1{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.25;letter-spacing:.02em}
+.brand p{margin:0;font-size:12px;color:var(--muted)}
+
+.welcome{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.welcome h2{font-size:17px}
+.welcome p{margin:6px 0 12px;font-size:14px;color:var(--muted)}
+.welcome ol{margin:0 0 12px;padding-left:1.3em;font-size:14px}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .n{font-family:var(--mono);font-weight:700;font-size:22px;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat .l{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+
+.vf{position:relative;padding:22px 20px 20px;background:var(--surface);border-radius:4px}
+.vf .k{position:absolute;width:22px;height:22px;border:3px solid var(--focus)}
+.vf .k1{top:0;left:0;border-right:0;border-bottom:0}.vf .k2{top:0;right:0;border-left:0;border-bottom:0}
+.vf .k3{bottom:0;left:0;border-right:0;border-top:0}.vf .k4{bottom:0;right:0;border-left:0;border-top:0}
+.lock-label{display:inline-block;background:var(--focus);color:var(--focus-ink);font-size:11px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:3px}
+.vf h2{font-size:19px;margin-top:10px;line-height:1.5}
+.vf p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+.meta{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:999px;padding:11px 22px;font-weight:700;cursor:pointer;background:var(--accent);color:var(--accent-ink);text-decoration:none}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.wide{width:100%}
+.btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
+
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.sec-h h2{font-size:17px}
+.filter{display:flex;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chapters{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+.ch{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.ch-h{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 14px 10px}
+.ch-no{font-family:var(--mono);font-weight:700;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:3px 7px}
+.ch-t{font-weight:700;font-size:15px;line-height:1.45;min-width:0}
+.ch-t span{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+.ch-p{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ch-t .free{display:inline-block;vertical-align:2px;font-family:var(--body);font-size:11px;font-weight:700;color:var(--done);border:1px solid var(--done);border-radius:999px;padding:1px 8px;margin-left:6px}
+.frames{display:flex;gap:3px;padding:0 14px 12px}
+.frames i{flex:1;height:5px;border-radius:2px;background:var(--line)}
+.frames i.on{background:var(--done)}
+.list{list-style:none;margin:0;padding:0 8px 8px}
+.m{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 6px;border:0;border-top:1px solid var(--line);cursor:pointer;background:none;width:100%;text-align:left}
+.box{width:22px;height:22px;border:2px solid var(--line);border-radius:6px;display:grid;place-items:center;font-size:13px;color:#fff}
+.m.is-done .box{background:var(--done);border-color:var(--done)}
+.m.is-done .mt{color:var(--muted)}
+.m.is-locked .box{border-style:dashed}
+.m.is-locked .box::after{content:"";width:8px;height:7px;border:2px solid var(--muted);border-radius:2px;margin-top:3px}
+.m.is-locked .mt{color:var(--muted)}
+.mt{font-size:14px;line-height:1.5;min-width:0}
+.tag{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.tag.pop{color:var(--accent);font-weight:700}
+
+.scrim{position:fixed;inset:0;background:var(--shade);z-index:10}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;max-height:90%;overflow:auto;background:var(--surface);border-radius:18px 18px 0 0;padding:8px 18px calc(24px + env(safe-area-inset-bottom,0px));max-width:600px;margin:0 auto;box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 12px}
+.kicker{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700}
+.sheet h3{font-size:20px;line-height:1.5;margin:4px 0 10px}
+.why{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:14px}
+.why b{color:var(--accent)}
+.steps{margin:14px 0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:26px 1fr;gap:8px;font-size:14.5px}
+.steps li::before{content:counter(s);font-family:var(--mono);font-weight:700;font-size:12px;width:22px;height:22px;border-radius:50%;background:var(--focus);color:var(--focus-ink);display:grid;place-items:center;margin-top:3px}
+.samples{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.samples figure{margin:0;min-width:0}
+.samples img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:8px;display:block;background:var(--bg)}
+.samples figcaption{font-size:11px;color:var(--muted);text-align:center;margin-top:2px}
+.ph{aspect-ratio:4/5;border:2px dashed var(--line);border-radius:8px;display:grid;place-items:center;text-align:center;font-size:11px;color:var(--muted);padding:8px;font-family:var(--mono);word-break:break-all}
+.ok{border-left:3px solid var(--done);padding:4px 0 4px 10px;font-size:14px;margin:12px 0}
+.ok b{color:var(--done)}
+.tip{border-left:3px solid var(--focus);padding:4px 0 4px 10px;font-size:14px;margin:12px 0}
+label.ml{display:block;font-size:12px;color:var(--muted);margin:14px 0 4px}
+textarea,input[type=text]{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px}
+textarea{min-height:68px;resize:vertical}
+.sheet .row{margin-top:14px}
+
+.buy-list{margin:10px 0;padding-left:1.2em;font-size:14px}
+.price{font-family:var(--mono);font-size:28px;font-weight:700;margin:8px 0 2px}
+.small{font-size:12px;color:var(--muted)}
+.err{color:#c0392b;font-size:13px;min-height:1.2em;margin-top:6px}
+.divider{border:0;border-top:1px solid var(--line);margin:18px 0}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;z-index:20;white-space:nowrap}
+.foot{font-size:11px;color:var(--muted);text-align:center;display:flex;flex-direction:column;gap:4px}
+.foot button{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:11px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+.step-body{min-width:0;display:flex;flex-direction:column;gap:8px}
+.step-img{margin:0;max-width:300px}
+.step-img.icon{max-width:76px}
+.step-img.tall{max-width:220px}
+.step-img img{display:block;width:100%;border-radius:10px;border:1px solid var(--line)}
+.step-img.icon img{border-radius:18px}
+.step-img figcaption{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+</style>
+
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-hidden="true"></div>
+    <div class="brand"><h1 id="appName"></h1><p id="appSub"></p></div>
+  </header>
+
+  <section class="welcome" id="welcome" hidden>
+    <h2>ようこそ！使い方は3つだけ</h2>
+    <ol>
+      <li>ミッションを開いて、iPhoneで実際にやってみる</li>
+      <li>できたら「できた！」を押す</li>
+      <li>気づいたことをメモに残す</li>
+    </ol>
+    <p>Safariの共有ボタン →「ホーム画面に追加」で、アプリのように使えます。</p>
+    <button class="btn" id="welcomeOk" type="button">はじめる</button>
+  </section>
+
+  <section class="stats" aria-label="進み具合">
+    <div class="stat"><div class="n" id="sDone">0</div><div class="l">できた</div><div class="bar"><i id="sBar"></i></div></div>
+    <div class="stat"><div class="n" id="sLeft">0</div><div class="l">のこり</div></div>
+    <div class="stat"><div class="n" id="sDays">0</div><div class="l">練習した日</div></div>
+  </section>
+
+  <section class="vf" aria-label="次のミッション">
+    <i class="k k1"></i><i class="k k2"></i><i class="k k3"></i><i class="k k4"></i>
+    <span class="lock-label" id="tLabel">次のミッション</span>
+    <h2 id="tTitle"></h2>
+    <p id="tWhy"></p>
+    <div class="row">
+      <button class="btn" id="tOpen" type="button">やってみる</button>
+      <span class="meta" id="tMeta"></span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-h">
+      <h2>ミッション</h2>
+      <div class="filter" role="group" aria-label="表示">
+        <button class="chip" type="button" data-f="all" aria-pressed="true">全部</button>
+        <button class="chip" type="button" data-f="todo" aria-pressed="false">まだ</button>
+        <button class="chip" type="button" data-f="done" aria-pressed="false">できた</button>
+      </div>
+    </div>
+    <div class="chapters" id="chapters"></div>
+  </section>
+
+  <footer class="foot">
+    <span id="footStatus"></span>
+    <span><button type="button" id="openCode">購入コードを入力</button> ・ <button type="button" id="resetBtn">記録をリセット</button></span>
+  </footer>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+  <div class="grab"></div>
+  <div class="kicker" id="mKicker"></div>
+  <h3 id="mTitle"></h3>
+  <div class="why" id="mWhy"></div>
+  <ol class="steps" id="mSteps"></ol>
+  <div class="samples" id="mSamples" hidden></div>
+  <div class="ok" id="mOk"></div>
+  <div class="tip" id="mTip"></div>
+  <label class="ml" for="mMemo">気づいたことメモ</label>
+  <textarea id="mMemo" placeholder="例：2倍にしたらお皿がまんまるになった"></textarea>
+  <div class="row">
+    <button class="btn" id="mDone" type="button">できた！</button>
+    <button class="btn ghost" id="mClose" type="button">閉じる</button>
+  </div>
+</div>
+
+<div class="sheet" id="buy" role="dialog" aria-modal="true" aria-labelledby="bTitle" hidden>
+  <div class="grab"></div>
+  <div class="kicker">続きのミッション</div>
+  <h3 id="bTitle"></h3>
+  <p class="small" id="bLead"></p>
+  <ul class="buy-list" id="bList"></ul>
+  <div class="price" id="bPrice"></div>
+  <p class="small">買い切り・追加料金なし・アップデート無料</p>
+  <div class="row"><a class="btn wide" id="bBuy" target="_blank" rel="noopener">購入ページへ</a></div>
+  <hr class="divider">
+  <label class="ml" for="bCode">購入後に届いた購入コードを入力</label>
+  <input type="text" id="bCode" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="例：CAFE-XXXX-XXXX">
+  <div class="err" id="bErr" role="status"></div>
+  <div class="row">
+    <button class="btn" id="bApply" type="button">解除する</button>
+    <button class="btn ghost" id="bClose" type="button">閉じる</button>
+  </div>
+</div>
+
+<div class="sheet" id="confirm" role="dialog" aria-modal="true" aria-labelledby="cTitle" hidden>
+  <div class="grab"></div>
+  <h3 id="cTitle">記録をリセットしますか？</h3>
+  <p class="small">「できた」とメモがすべて消えます。購入した内容は消えません。</p>
+  <div class="row"><button class="btn" id="cYes" type="button">リセットする</button><button class="btn ghost" id="cNo" type="button">やめる</button></div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+window.DRILL = {
+  id: "mama",
+  name: "こども写真ドリル",
+  short: "こども写真",
+  sub: "iPhoneで、わが子の“いい顔”を逃さない",
+  accent: "#2a72c9",
+  accentDark: "#7db6ff",
+  freeChapters: 2,
+  buy: {
+    price: "2,980円",
+    url: "",
+    lead: "寝顔・運動会・発表会・成長記録まで。わが子の写真がぐっと良くなるミッションが全部開きます。",
+    codeHashes: ["408d42afb57ec9d4d3ac8cc294878f8a91640c33d1bd89f6eab49a9eaab2e3fa"]
+  },
+  chapters: [
+  {t:"最初にやる設定", s:"すぐ撮れる準備", m:[
+    {id:"grid",t:"グリッドと水平をONにする",min:2,why:"線があるだけで傾きが消え、写真が整って見えます。",steps:[{t:"ホーム画面の「設定」アプリを開く",img:"photos/common/settings-icon.jpg",size:"icon"},{t:"「カメラ」→「構図」を開く。最初は「グリッド」と「水平」が灰色（OFF）です",img:"photos/common/compose-off.jpg",cap:"灰色＝OFF"},{t:"「グリッド」と「水平」をタップして、緑（ON）にする",img:"photos/common/compose-on.jpg",cap:"緑＝ON。ほかの項目はそのままでOK"},{t:"カメラを開くと、画面に9マスの線が出ます。スマホをまっすぐ構えると、真ん中に黄色い横線が出ます",img:"photos/common/camera-grid.jpg",size:"tall",cap:"白い線がグリッド。真ん中の黄色い線が「水平」の合図"}],ok:"カメラに9マスの線が出て、まっすぐ構えると黄色い横線が出る",tip:"黄色い線が出たら「まっすぐ」の合図。地面や机の線をグリッドの横線に合わせるだけでOK。"},
+    {id:"lockscreen",t:"ロック画面から一瞬でカメラ",min:1,pop:true,why:"子どもの“今”は2秒で終わります。最速で起動できるように。",steps:["ロック画面で左にスワイプ","カメラが開くのを確認","（アクションボタン・カメラコントロールがある機種）設定でカメラに割り当てる"],ok:"ロック画面から2秒でカメラが開く",tip:"ポケットから出して左スワイプ、を体で覚えましょう。"},
+    {id:"burstvol",t:"音量ボタンで連写できるようにする",min:2,pop:true,why:"動き回る子どもは連写が基本。ボタンを探さずに撮れます。",steps:["設定 → カメラ →「音量を上げるボタンでバースト」をON","カメラで音量＋を長押し","写真アプリで「選択」→ いい顔だけ残す"],ok:"音量ボタンで連写できた",tip:"いらない写真はその場で消すと、ストレージも安心。"},
+    {id:"lens",t:"レンズをひと拭き",min:1,why:"小さな手でベタベタになりがち。拭くだけでくっきり。",steps:["服やメガネ拭きでレンズを拭く","拭く前と後で1枚ずつくらべる"],ok:"拭いた後の方がくっきり",tip:"撮る前のひと拭きを習慣に。"},
+    {id:"livephoto",t:"Live PhotosをONにしておく",min:2,why:"撮る前後の3秒も残るので、あとからベストな表情を選べます。",steps:["カメラ右上の丸いマークをON","子どもを1枚撮る","写真を長押しすると動くのを確認"],ok:"動く写真が撮れた",tip:"声や笑い声も残るので、思い出が何倍にも。"}
+  ]},
+  {t:"動く子どもを逃さない", s:"ブレない・逃さない", m:[
+    {id:"burst",t:"シャッターを左にずらして連写",min:3,pop:true,why:"走る・ジャンプ・ボール遊び。決定的瞬間をあとから選べます。",steps:["シャッターを左にずらして押さえる","数字が増えたら離す","写真を開いて「選択」→ いい1枚を残す"],ok:"連写から1枚を選べた",tip:"「せーの」で始めてから連写すると成功率アップ。"},
+    {id:"keyphoto",t:"目つぶりをキー写真で直す",min:4,pop:true,why:"Live Photosなら、3秒の中から目を開けた瞬間を選び直せます。",steps:["Live PhotosがONの写真を開く","編集 → Live Photosマーク","下のコマを動かして、目が開いている瞬間で「キー写真に設定」"],ok:"目を開けた1枚に変えられた",tip:"集合写真でも使える、知っていると得するワザ。"},
+    {id:"quicktake",t:"写真モードのまま動画を撮る",min:2,why:"「今の動画で撮りたかった！」をなくせます。",steps:["シャッターを長押し → 動画が始まる","右の鍵マークへずらすと手を離せる","赤いボタンで止める"],ok:"写真モードのまま動画が撮れた",tip:"はじめての一歩、はじめての言葉はこれで。"},
+    {id:"timer",t:"タイマーで家族全員写真",min:4,why:"タイマーは自動で10枚連写。全員目を開けた1枚が選べます。",steps:["スマホを棚や三脚に置く","上の「^」→ タイマー → 10秒","みんなで並んで撮影","写真を開いて一番いい1枚を選ぶ"],ok:"タイマーで家族写真が撮れた",tip:"Apple Watchがあれば「カメラリモート」でもっと楽。"}
+  ]},
+  {t:"かわいく写る角度と光", s:"しゃがむだけで変わる", m:[
+    {id:"eyelevel",t:"子どもの目の高さまでしゃがむ",min:3,pop:true,why:"大人の目線から撮ると見下ろし写真に。しゃがむだけで表情が生き生きします。",steps:["立ったまま1枚","しゃがんで子どもの目の高さで1枚","くらべる"],ok:"目の高さの方が自然な表情に見える",tip:"寝転がって撮ると、もっとダイナミックに。"},
+    {id:"zoom2",t:"2倍で少し離れて撮る",min:3,why:"顔がゆがまず、自然でかわいい表情に。カメラを意識させにくいのも◎。",steps:["1xで近づいて顔を1枚","2xにして少し下がって1枚","顔の形をくらべる"],ok:"2倍の方が自然な顔に写った",tip:"離れて撮ると、カメラ目線じゃない自然な表情が撮れます。"},
+    {id:"backlight",t:"逆光でふんわり撮る",min:5,why:"窓や夕日を背にすると、髪がキラキラしてやさしい雰囲気に。",steps:["窓を背に子どもを座らせる","子どもの顔をタップ","☀️を上げて顔を明るくする","背景が白っぽくなったらOK"],ok:"ふんわり明るい写真が撮れた",tip:"顔が暗いときは、白いシーツや紙で光を返して。"},
+    {id:"shade",t:"日なたより日かげで撮る",min:4,why:"真夏の日なたは影が強く、目を細めがち。日かげは肌がきれいに写ります。",steps:["日なたで1枚","木かげや建物の影に移動して1枚","肌と表情をくらべる"],ok:"日かげの方が肌がきれい",tip:"公園では木かげがベストポジション。"},
+    {id:"wide",t:"0.5xで“鼻デカ”おもしろ写真",min:3,why:"近づいて超広角で撮るとコミカルに。子どもが大喜びします。",steps:["0.5xに切り替える","顔に近づいて撮る","足元から見上げてもう1枚"],ok:"おもしろ写真が撮れた",tip:"ペットでやってもかわいいです。"}
+  ]},
+  {t:"寝顔・室内・暗い場所", s:"フラッシュなしで", m:[
+    {id:"sleep",t:"寝顔をフラッシュなしで撮る",min:5,pop:true,why:"フラッシュは起こしてしまうし、肌が白く飛びます。",steps:["フラッシュがOFFか確認","部屋の明かりは少しつけておく","スマホを枕元や自分のひじで固定","ナイトモードの秒数が終わるまで動かさない"],ok:"ブレずに寝顔が撮れた",tip:"シャッター音が気になる場合は、Live Photosの動画から切り出すのも手。"},
+    {id:"window2",t:"窓の光で撮る",min:4,why:"室内で一番きれいな光は窓の光。部屋の照明より肌がきれい。",steps:["窓の近くで遊ばせる","窓が子どもの横に来る位置から撮る","照明をつけたときとくらべる"],ok:"窓の光の方が自然な色に",tip:"レースのカーテンが光をやわらかくしてくれます。"},
+    {id:"warmth",t:"黄色すぎ・青すぎを直す",min:3,why:"部屋の照明で色が変になったときに。",steps:["写真を編集","黄色すぎる → 暖かみを下げる","青すぎる → 暖かみを上げる"],ok:"肌の色が自然に戻った",tip:"肌が自然に見えるところで止めるのがコツ。"},
+    {id:"bath",t:"お風呂・水遊びの写真は顔と体の写し方に注意",min:3,why:"かわいい思い出でも、ネットに出すと危険があります。",steps:["撮るなら顔中心・肩から上に","共有は家族だけの共有アルバムに","SNSには投稿しない"],ok:"安全な撮り方と残し方を決めた",tip:"思い出は残す、でも外には出さない。"}
+  ]},
+  {t:"運動会", s:"遠くの“がんばった”を撮る", m:[
+    {id:"sports-pos",t:"撮る場所とタイミングを決める",min:5,why:"いい場所はゴール前より、カーブやゴール少し手前。前日に決めておきます。",steps:["プログラムで出番の時間をメモ","走ってくる方向に向かって撮れる場所を探す","太陽が自分の後ろにくる位置を選ぶ"],ok:"出番ごとの撮影場所を決めた",tip:"逆光側は顔が暗くなりやすいので注意。"},
+    {id:"sports-zoom",t:"望遠＋連写で走る姿を撮る",min:5,pop:true,why:"遠い子どもも、望遠と連写なら顔までしっかり。",steps:["3x/5x（ない機種は2x）にする","走ってくる子どもをタップしてピント","近づいてきたら連写","あとでベストを選ぶ"],ok:"走る姿の連写が撮れた",tip:"ズームしすぎて画質が荒れるなら、少し戻して後でトリミング。"},
+    {id:"sports-video",t:"アクションモードで動画",min:4,why:"走りながら・人混みでも、ブレない動画が撮れます。",steps:["ビデオモードで走る人マークをON","明るい屋外で撮る","歩きながら撮ってもブレないか確認"],ok:"ブレない動画が撮れた",tip:"写真はパートナー、動画は自分、と役割分担がおすすめ。"},
+    {id:"sports-split",t:"動画から写真を切り出す",min:4,why:"動画で撮っておけば、あとからいい瞬間を写真にできます。",steps:["動画を再生していい瞬間で止める","スクリーンショット、または編集で静止画を書き出す","トリミングで整える"],ok:"動画から1枚の写真ができた",tip:"4Kで撮っておくと、切り出してもきれい。"}
+  ]},
+  {t:"発表会・入学式", s:"暗い会場と記念写真", m:[
+    {id:"stage",t:"暗い舞台の子どもを撮る",min:5,pop:true,why:"舞台はライトが強く、顔が真っ白になりがち。明るさを下げるのがコツ。",steps:["舞台の子どもをタップ","☀️を下げて顔が白く飛ばないようにする","長押しで固定（AE/AFロック）","ひじを固定して撮る"],ok:"顔が白く飛ばずに撮れた",tip:"フラッシュは禁止の会場がほとんど。周りの迷惑にも。"},
+    {id:"stage-video",t:"発表会の動画をきれいに",min:4,why:"手ブレ・ズームのしすぎ・音割れを防ぎます。",steps:["録画前にズームを決めて、録画中はなるべく動かさない","ひじを体につけるか、前の椅子に手をつく","録画中に写真も撮りたいときは白いシャッターボタン"],ok:"ブレの少ない動画が撮れた",tip:"撮影ルールは必ず確認。撮影禁止のときは心に残す日。"},
+    {id:"ceremony",t:"入学式の看板写真をきれいに",min:5,why:"看板の前は大混雑。サッと撮れるように手順を決めておきます。",steps:["看板と子どもを入れて、少ししゃがむ","2xで少し離れて、看板の文字がゆがまないように","連写で表情違いを数枚","親子で入るときはタイマーか、他の家族と撮り合いっこ"],ok:"看板写真が撮れた",tip:"桜があれば、桜を手前に入れると一気に春らしく。"},
+    {id:"portrait-kid",t:"ポートレートで背景をぼかす",min:4,why:"背景に知らない人がいても、主役だけ目立ちます。",steps:["ポートレートモードで撮る","編集 → 左上「f」でボケ量を調整","ピントの位置も後から変えられる（対応機種）"],ok:"背景がぼけた写真が撮れた",tip:"背景の人が気になるときは「クリーンアップ」で消すことも。"}
+  ]},
+  {t:"成長記録と家族写真", s:"見返したくなる残し方", m:[
+    {id:"teiten",t:"同じ場所・同じポーズで定点撮影",min:5,pop:true,why:"毎月・毎年同じ場所で撮ると、成長が一目でわかる宝物に。",steps:["場所を決める（玄関・ソファ・柱など）","同じ角度・同じ倍率で撮る","「成長記録」アルバムに入れる","毎月の誕生日など日を決める"],ok:"1回目の定点写真が撮れた",tip:"ぬいぐるみと並べると、大きさの変化がよくわかります。"},
+    {id:"hands",t:"小さな手足をマクロで残す",min:4,why:"今しかない小ささ。寄って撮ると一生の思い出に。",steps:["手や足に近づく（マクロ対応機種は花マーク）","大人の手と一緒に撮る","ピントを合わせて数枚"],ok:"手足のアップが撮れた",tip:"寝ているときがチャンス。"},
+    {id:"parent-in",t:"ママ・パパも写る写真を撮る",min:5,why:"撮る人はいつも写らない。あとで「一緒の写真がない」と後悔しがち。",steps:["タイマーかApple Watchのリモートを使う","スマホを目の高さに置く","子どもと遊んでいるところを連写"],ok:"親子の写真が撮れた",tip:"カメラ目線じゃない、遊んでいる写真が一番いい顔。"},
+    {id:"memory",t:"メモリームービーを作る",min:5,why:"写真アプリが自動でムービーに。おじいちゃんおばあちゃんに大好評。",steps:["写真アプリ → メモリー","「＋」からテーマや人物を選んで作成","音楽を選んで保存・共有"],ok:"1本ムービーができた",tip:"誕生日や年末に作るのがおすすめ。"}
+  ]},
+  {t:"整理・共有・SNSの安全", s:"残して、守る", m:[
+    {id:"people",t:"「人物」に子どもの名前を登録",min:4,why:"名前で検索するだけで、その子の写真が全部出てきます。",steps:["写真アプリ →「人物とペット」","子どもの顔を選んで名前を付ける","検索に名前を入れて確認"],ok:"名前で写真が探せた",tip:"兄弟姉妹ごとに登録しておくと整理が楽。"},
+    {id:"shared",t:"家族の共有アルバムを作る",min:5,why:"パートナーや祖父母と、LINEより画質よく共有できます。",steps:["写真アプリ → 共有アルバム →「＋」","家族を招待","写真を追加","コメントや「いいね」もできる"],ok:"共有アルバムができた",tip:"行事ごとにアルバムを分けると見返しやすい。"},
+    {id:"sns-safe",t:"SNSに載せる前の安全チェック",min:4,pop:true,why:"位置情報・制服・名札・家の外観から、住所や学校がわかってしまうことがあります。",steps:["共有 → オプション → 位置情報をOFF","名札・制服の校章・家の表札が写っていないか確認","他の子の顔が写っていたら載せない or スタンプで隠す","後ろ姿・手元など顔なし写真も検討"],ok:"チェックしてから投稿できた",tip:"「かわいい」を守るのも親の役目。"},
+    {id:"backup",t:"写真が消えない準備をする",min:5,why:"スマホの故障や紛失で、思い出が全部消えるのを防ぎます。",steps:["設定 → 自分の名前 → iCloud → 写真 がONか確認","容量が足りなければプランを見直す、またはパソコンや他のサービスにも保存","年に1回、フォトブックにするのもおすすめ"],ok:"バックアップの設定を確認した",tip:"一番大事な写真は2か所以上に。"}
+  ]}
+  ]
+};
+
+</script>
+<script>
+window.DRILL_PREVIEW = false;
+(function(){
+"use strict";
+const D = window.DRILL;
+const $ = id => document.getElementById(id);
+const KEY = "drill-" + D.id;
+const KEY_UNLOCK = KEY + "-unlocked";
+const KEY_WELCOME = KEY + "-welcomed";
+const today = () => new Date().toLocaleDateString("sv-SE");
+
+const ALL = [];
+D.chapters.forEach((c, ci) => c.m.forEach(m => ALL.push(Object.assign({}, m, {ch: c, ci}))));
+
+function load(k, fallback){ try{ const v = localStorage.getItem(k); return v == null ? fallback : JSON.parse(v); }catch(e){ return fallback; } }
+function store(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+let state = Object.assign({done:{}, memo:{}, days:[]}, load(KEY, {}));
+let unlocked = !!load(KEY_UNLOCK, false);
+let filter = "all", openId = null, memoTimer = null;
+
+const isFree = ci => ci < D.freeChapters;
+const canOpen = m => unlocked || isFree(m.ci);
+const save = () => store(KEY, state);
+
+/* ---------- home ---------- */
+function render(){
+  const n = ALL.filter(m => state.done[m.id]).length;
+  $("sDone").textContent = n;
+  $("sLeft").textContent = ALL.length - n;
+  $("sDays").textContent = state.days.length;
+  $("sBar").style.width = Math.round(n / ALL.length * 100) + "%";
+
+  const next = ALL.find(m => !state.done[m.id]);
+  const tOpen = $("tOpen");
+  if(!next){
+    $("tLabel").textContent = "修了";
+    $("tTitle").textContent = "全ミッション達成！おめでとうございます";
+    $("tWhy").textContent = "メモを見返すと、自分だけのコツ集になっています。好きなミッションをもう一度やってみましょう。";
+    $("tMeta").textContent = ""; tOpen.hidden = true;
+  } else if(!canOpen(next)){
+    $("tLabel").textContent = "無料体験クリア";
+    $("tTitle").textContent = "無料のミッションを全部できました！";
+    $("tWhy").textContent = `ここから先は「${D.chapters[D.freeChapters].t}」など${ALL.filter(m => !isFree(m.ci)).length}個のミッション。続きは購入で開きます。`;
+    $("tMeta").textContent = ""; tOpen.hidden = false; tOpen.textContent = "続きを見る"; tOpen.onclick = openBuy;
+  } else {
+    $("tLabel").textContent = "次のミッション";
+    $("tTitle").textContent = next.t;
+    $("tWhy").textContent = next.why;
+    $("tMeta").textContent = `CH ${pad(next.ci + 1)} ・ 約${next.min}分${next.pop ? " ・ 人気" : ""}`;
+    tOpen.hidden = false; tOpen.textContent = "やってみる"; tOpen.onclick = () => openMission(next.id);
+  }
+
+  const box = $("chapters"); box.textContent = "";
+  D.chapters.forEach((c, ci) => {
+    const items = ALL.filter(m => m.ci === ci && (filter === "all" || (filter === "done") === !!state.done[m.id]));
+    if(!items.length) return;
+    const total = c.m.length, d = c.m.filter(m => state.done[m.id]).length;
+    const el = document.createElement("article"); el.className = "ch";
+    const h = document.createElement("div"); h.className = "ch-h";
+    const no = document.createElement("span"); no.className = "ch-no"; no.textContent = "CH " + pad(ci + 1);
+    const t = document.createElement("div"); t.className = "ch-t"; t.textContent = c.t;
+    if(isFree(ci) && !unlocked){ const f = document.createElement("span"); f.className = "free"; f.textContent = "無料"; t.appendChild(f); }
+    const s = document.createElement("span"); s.textContent = c.s; t.appendChild(s);
+    const p = document.createElement("span"); p.className = "ch-p"; p.textContent = `${d}/${total}`;
+    h.append(no, t, p);
+    const fr = document.createElement("div"); fr.className = "frames";
+    c.m.forEach(m => { const i = document.createElement("i"); if(state.done[m.id]) i.className = "on"; fr.appendChild(i); });
+    const ul = document.createElement("ul"); ul.className = "list";
+    items.forEach(m => {
+      const li = document.createElement("li");
+      const b = document.createElement("button"); b.type = "button";
+      const locked = !canOpen(m), done = !!state.done[m.id];
+      b.className = "m" + (done ? " is-done" : "") + (locked ? " is-locked" : "");
+      const bx = document.createElement("span"); bx.className = "box"; bx.setAttribute("aria-hidden", "true"); bx.textContent = done ? "✓" : "";
+      const mt = document.createElement("span"); mt.className = "mt"; mt.textContent = m.t;
+      const tg = document.createElement("span"); tg.className = "tag" + (m.pop ? " pop" : ""); tg.textContent = (m.pop ? "人気 " : "") + m.min + "分";
+      b.append(bx, mt, tg);
+      b.setAttribute("aria-label", m.t + (done ? "（できた）" : locked ? "（購入で開きます）" : ""));
+      b.onclick = () => locked ? openBuy() : openMission(m.id);
+      li.appendChild(b); ul.appendChild(li);
+    });
+    el.append(h, fr, ul); box.appendChild(el);
+  });
+
+  $("footStatus").textContent = unlocked ? "全ミッション解放済み" : `無料体験中（${D.freeChapters}章まで）`;
+  $("openCode").hidden = unlocked;
+}
+const pad = n => String(n).padStart(2, "0");
+
+/* ---------- sheets ---------- */
+let openSheet = null;
+function show(id){ hideAll(); $("scrim").hidden = false; $(id).hidden = false; $(id).scrollTop = 0; openSheet = id; }
+function hideAll(){ ["sheet","buy","confirm"].forEach(i => $(i).hidden = true); $("scrim").hidden = true; openSheet = null; }
+function closeAny(){ if(openSheet === "sheet") flushMemo(); openId = null; hideAll(); }
+
+function addLabeled(el, label, text){ el.textContent = ""; const b = document.createElement("b"); b.textContent = label; el.append(b, text); }
+
+function openMission(id){
+  const m = ALL.find(x => x.id === id); if(!m) return;
+  openId = id;
+  $("mKicker").textContent = `CH ${pad(m.ci + 1)} ${m.ch.t} ・ 約${m.min}分`;
+  $("mTitle").textContent = m.t;
+  addLabeled($("mWhy"), "なぜ？ ", m.why);
+  const ol = $("mSteps"); ol.textContent = "";
+  m.steps.forEach(s => {
+    const st = typeof s === "string" ? {t: s} : s;
+    const li = document.createElement("li");
+    const body = document.createElement("div"); body.className = "step-body";
+    const sp = document.createElement("span"); sp.textContent = st.t; body.appendChild(sp);
+    if(st.img){
+      const fig = document.createElement("figure"); fig.className = "step-img" + (st.size ? " " + st.size : "");
+      const img = new Image(); img.src = st.img; img.alt = st.cap || st.t; img.loading = "lazy";
+      img.onerror = () => fig.remove();
+      fig.appendChild(img);
+      if(st.cap){ const fc = document.createElement("figcaption"); fc.textContent = st.cap; fig.appendChild(fc); }
+      body.appendChild(fig);
+    }
+    li.appendChild(body); ol.appendChild(li);
+  });
+  samples(m);
+  addLabeled($("mOk"), "できた目安：", m.ok);
+  addLabeled($("mTip"), "コツ：", m.tip);
+  $("mMemo").value = state.memo[m.id] || "";
+  const d = !!state.done[m.id];
+  $("mDone").textContent = d ? "できた を取り消す" : "できた！";
+  $("mDone").className = d ? "btn ghost" : "btn";
+  show("sheet");
+  $("mClose").focus();
+}
+
+/* sample photos: photos/<id>-before.jpg / -after.jpg — shown only if the file exists */
+function samples(m){
+  const box = $("mSamples"); box.textContent = ""; box.hidden = true;
+  [["before","ビフォー"],["after","アフター"]].forEach(([k, cap]) => {
+    const file = `photos/${m.id}-${k}.jpg`;
+    const fig = document.createElement("figure");
+    const img = new Image(); img.alt = `${m.t}の${cap}`; img.loading = "lazy";
+    const fc = document.createElement("figcaption"); fc.textContent = cap;
+    img.onload = () => { box.hidden = false; };
+    img.onerror = () => {
+      if(window.DRILL_PREVIEW){ const ph = document.createElement("div"); ph.className = "ph"; ph.textContent = "見本写真をここに\n" + file; img.replaceWith(ph); box.hidden = false; }
+      else fig.remove();
+    };
+    img.src = file;
+    fig.append(img, fc); box.appendChild(fig);
+  });
+}
+
+$("mDone").onclick = () => {
+  const m = ALL.find(x => x.id === openId); if(!m) return;
+  flushMemo();
+  if(state.done[m.id]) delete state.done[m.id];
+  else {
+    state.done[m.id] = today();
+    if(!state.days.includes(today())) state.days.push(today());
+    toast(ALL.every(x => state.done[x.id]) ? "全部できた！修了です" : "ナイス！ひとつ覚えた");
+  }
+  save(); render();
+  if(state.done[m.id]) setTimeout(closeAny, 450);
+  else openMission(m.id);
+};
+$("mMemo").addEventListener("input", () => {
+  if(!openId) return;
+  state.memo[openId] = $("mMemo").value;
+  clearTimeout(memoTimer); memoTimer = setTimeout(() => { memoTimer = null; save(); }, 600);
+});
+function flushMemo(){ if(memoTimer){ clearTimeout(memoTimer); memoTimer = null; save(); } }
+
+/* ---------- purchase ---------- */
+function openBuy(){
+  $("bTitle").textContent = `${D.name} 完全版`;
+  $("bLead").textContent = D.buy.lead;
+  const ul = $("bList"); ul.textContent = "";
+  D.chapters.forEach((c, ci) => { if(isFree(ci)) return; const li = document.createElement("li"); li.textContent = `${c.t}（${c.m.length}ミッション）`; ul.appendChild(li); });
+  $("bPrice").textContent = D.buy.price;
+  const a = $("bBuy");
+  if(D.buy.url){ a.href = D.buy.url; a.removeAttribute("aria-disabled"); a.textContent = "購入ページへ"; }
+  else { a.removeAttribute("href"); a.setAttribute("aria-disabled", "true"); a.textContent = "購入ページは準備中です"; }
+  $("bCode").value = ""; $("bErr").textContent = "";
+  show("buy");
+}
+async function sha256(text){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+$("bApply").onclick = async () => {
+  const code = $("bCode").value.trim().toUpperCase().replace(/\s+/g, "");
+  if(!code){ $("bErr").textContent = "購入コードを入力してください。"; return; }
+  if(!window.crypto || !crypto.subtle){ $("bErr").textContent = "このブラウザでは確認できません。Safariで開き直してください。"; return; }
+  const h = await sha256(D.id + ":" + code);
+  if((D.buy.codeHashes || []).includes(h)){
+    unlocked = true; store(KEY_UNLOCK, true); hideAll(); render(); toast("全ミッションが開きました！");
+  } else {
+    $("bErr").textContent = "コードが違います。購入完了メールのコードを、ハイフンも含めてそのまま入力してください。";
+  }
+};
+$("bClose").onclick = closeAny;
+$("openCode").onclick = openBuy;
+
+/* ---------- misc ---------- */
+$("mClose").onclick = closeAny;
+$("scrim").onclick = closeAny;
+document.addEventListener("keydown", e => { if(e.key === "Escape" && openSheet) closeAny(); });
+document.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+  filter = b.dataset.f;
+  document.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  render();
+});
+$("resetBtn").onclick = () => show("confirm");
+$("cNo").onclick = closeAny;
+$("cYes").onclick = () => { state = {done:{}, memo:{}, days:[]}; save(); closeAny(); render(); toast("リセットしました"); };
+function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 1800); }
+
+$("appName").textContent = D.name;
+$("appSub").textContent = D.sub;
+if(!load(KEY_WELCOME, false)){ $("welcome").hidden = false; }
+$("welcomeOk").onclick = () => { store(KEY_WELCOME, true); $("welcome").hidden = true; };
+render();
+
+if("serviceWorker" in navigator && location.protocol === "https:" && !window.DRILL_PREVIEW){
+  try{ navigator.serviceWorker.register("sw.js").catch(() => {}); }catch(e){}
+}
+})();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "こども写真ドリル",
+  "short_name": "こども写真",
+  "description": "mama",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f4f2",
+  "theme_color": "#2a72c9",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
