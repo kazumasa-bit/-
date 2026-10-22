@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>J.A.R.V.I.S.</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>J.A.R.V.I.S.</h1>
+    <span id="clock"></span>
+  </header>
+
+  <main>
+    <section class="core-wrap">
+      <button id="core" class="core" aria-label="話しかける">
+        <span class="ring r1"></span>
+        <span class="ring r2"></span>
+        <span class="ring r3"></span>
+        <span class="center"></span>
+      </button>
+      <p id="state">タップして話しかける</p>
+      <label class="wake">
+        <input type="checkbox" id="wakeMode" />
+        常時待機モード（「ジャービス」と呼びかけて起動）
+      </label>
+    </section>
+
+    <section id="log" class="log" aria-live="polite"></section>
+
+    <form id="form" class="input-row">
+      <input id="text" type="text" placeholder="テキストでも指示できます" autocomplete="off" />
+      <button type="submit">送信</button>
+      <button type="button" id="mute" title="読み上げのオン/オフ">🔊</button>
+      <button type="button" id="reset" title="会話をリセット">⟲</button>
+    </form>
+  </main>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
